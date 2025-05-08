@@ -1,5 +1,7 @@
 package com.cts.project.dto;
 
+import java.time.LocalDate;
+
 import jakarta.validation.constraints.*;
 import lombok.*;
  
@@ -18,12 +20,11 @@ public class AppointmentDTO {
     private Long doctorId;
  
     @NotBlank(message = "Appointment date is required")
-    private String appointmentDate;
+    private LocalDate appointmentDate;
  
     @NotBlank(message = "Appointment time is required") 
     private String appointmentTime;
  
-    @Pattern(regexp = "Scheduled|Cancelled|Completed", message = "Status must be Scheduled, Cancelled, or Completed")
-    private String status;
+    private String status; 
 }
  

@@ -1,5 +1,7 @@
 package com.cts.project.model;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -23,13 +25,11 @@ public class Appointment {
 
     @NotBlank(message = "Appointment date is required")
     @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Appointment date must be in YYYY-MM-DD format")
-    private String appointmentDate;
+    private LocalDate appointmentDate;
 
     @NotBlank(message = "Appointment time is required")
     @Pattern(regexp = "^([0-9]{2}:[0-9]{2} [APM]{2})$", message = "Appointment time must be in format HH:MM AM/PM")
     private String appointmentTime;
 
-    @NotBlank(message = "Status is required")
-    @Pattern(regexp = "Scheduled|Cancelled|Completed", message = "Status must be Scheduled, Cancelled, or Completed")
     private String status;
 }
