@@ -26,8 +26,7 @@ public class AppointmentController {
  
     @PostMapping("/book")
     public String book(@Valid @RequestBody AppointmentDTO dto) {
-         appointmentService.bookAppointment(dto);
-         return "Appointment booked successfully";
+        return appointmentService.bookAppointment(dto);
     }
  
     @PutMapping("/update/{id}")
@@ -36,9 +35,9 @@ public class AppointmentController {
         return "Appointment updated successfully";
     }
  
-    @GetMapping("/getappointmentbyid/{id}")
-    public AppointmentDTO getById(@PathVariable Long id) {
-        return appointmentService.getAppointmentById(id);
+    @GetMapping("/getappointmentbyid/{appid}")
+    public AppointmentDTO getById(@PathVariable Long appid) {
+        return appointmentService.getAppointmentById(appid);
     }
  
     @GetMapping("/getappointmentbypatientid/{patientId}")

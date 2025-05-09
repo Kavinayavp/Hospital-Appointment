@@ -4,7 +4,7 @@ import java.util.List;
 import com.cts.project.dto.AppointmentDTO;
  
 public interface AppointmentService {
-    AppointmentDTO bookAppointment(AppointmentDTO dto);
+    String bookAppointment(AppointmentDTO dto);
     AppointmentDTO updateAppointment(Long id, AppointmentDTO dto);
     AppointmentDTO getAppointmentById(Long id);
     List<AppointmentDTO> getAppointmentsByPatientId(Long patientId);

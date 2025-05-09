@@ -58,12 +58,10 @@ public class DoctorServiceImpl implements DoctorService {
 
 	@Override
 	public DoctorDTO getDoctorById(Long doctorId) {
-		Doctor doctor = doctorRepository.findById(doctorId)
+		return doctorRepository.findById(doctorId)
+				.map(this::mapToDTO)
 				.orElseThrow(() -> new DoctorNotFoundException("Doctor not found with id " + doctorId));
-		return DoctorDTO.builder().doctorId(doctor.getDoctorId()).doctorName(doctor.getDoctorName())
-				.specialization(doctor.getSpecialization()).experience(doctor.getExperience())
-				.contactNumber(doctor.getContactNumber()).email(doctor.getEmail())
-				.availableDays(doctor.getAvailableDays()).availableTime(doctor.getAvailableTime()).build();
+	
 	}
 
 	@Override

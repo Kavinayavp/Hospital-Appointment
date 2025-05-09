@@ -18,7 +18,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
 @RestController
-@RequestMapping("doctors")
+@RequestMapping("/doctors")
 @AllArgsConstructor
 public class DoctorController {
 
@@ -56,4 +56,7 @@ public class DoctorController {
 	public DoctorDTO getAvailability(@PathVariable String specialization) {
 		return service.getDoctorAvailability(specialization);
 	}
+	
+
+  
 }

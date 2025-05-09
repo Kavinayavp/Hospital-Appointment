@@ -14,7 +14,6 @@ import com.cts.project.model.Appointment;
 import com.cts.project.repository.AppointmentRepository;
 import com.cts.project.service.AppointmentServiceImpl;
 
-import java.time.LocalDate;
 import java.util.*;
  
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,7 +40,7 @@ class AppointmentServiceImplTest {
         appointment.setAppointmentId(1L);
         appointment.setDoctorId(2L);
         appointment.setPatientId(3L);
-        appointment.setAppointmentDate(LocalDate.of(2025, 5, 15));
+        appointment.setAppointmentDate("2025-05-23");
         appointment.setAppointmentTime("10:00 AM");
         appointment.setStatus("BOOKED");
         return appointment;
@@ -51,7 +50,7 @@ class AppointmentServiceImplTest {
         AppointmentDTO dto = new AppointmentDTO();
         dto.setDoctorId(2L);
         dto.setPatientId(3L);
-        dto.setAppointmentDate(LocalDate.of(2025, 5, 15));
+        dto.setAppointmentDate("2025-05-23");
         dto.setAppointmentTime("10:00 AM");
         return dto;
     }
@@ -62,19 +61,18 @@ class AppointmentServiceImplTest {
         response.setPatientName("Test Patient");
         return response;
     }
- 
-    @Test
-    void testBookAppointment_Success() {
+     @Test
+     void testBookAppointment_Success() {
         AppointmentDTO dto = getSampleDTO();
         Appointment saved = getSampleAppointment();
  
         when(patientClient.getPatientById(3L)).thenReturn(getSamplePatientResponse());
         when(appointmentRepository.save(any(Appointment.class))).thenReturn(saved);
  
-        AppointmentDTO result = appointmentService.bookAppointment(dto);
+     String result = appointmentService.bookAppointment(dto);
  
         assertNotNull(result);
-        assertEquals("BOOKED", result.getStatus());
+        assertEquals("BOOKED", result);
         verify(appointmentRepository, times(1)).save(any(Appointment.class));
     }
  
@@ -136,7 +134,7 @@ class AppointmentServiceImplTest {
     void testUpdateAppointment_Reschedule() {
         Appointment existing = getSampleAppointment();
         AppointmentDTO updateDTO = getSampleDTO();
-        updateDTO.setAppointmentDate(LocalDate.of(2025, 5, 20));
+        updateDTO.setAppointmentDate("2025-05-26 ");
         updateDTO.setAppointmentTime("2:00 PM");
  
         when(appointmentRepository.findById(1L)).thenReturn(Optional.of(existing));

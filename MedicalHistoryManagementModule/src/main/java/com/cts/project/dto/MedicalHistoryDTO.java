@@ -11,7 +11,9 @@ import lombok.*;
 public class MedicalHistoryDTO {
  
     private Long historyId;
- 
+    
+    private Long doctorId;
+    
     @NotNull(message = "Patient ID is required")
     private Long patientId;
  
