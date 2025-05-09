@@ -6,4 +6,6 @@ import java.util.List;
 public interface NotificationService {
     NotificationDTO sendNotification(NotificationDTO dto);
     List<NotificationDTO> getNotificationsByPatientId(Long patientId);
+	String notifyAppointmentStatus(Long appointmentId);
+	String notifyLatestHistory(Long patientId);
 }
