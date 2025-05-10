@@ -1,18 +1,19 @@
 package com.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.entity.UserInfo;
 import com.repository.UserInfoRepository;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 @Service
 public class UserService {
-	@Autowired
-	private UserInfoRepository repository;
 
-	@Autowired
+	private UserInfoRepository repository;
+	
 	private PasswordEncoder passwordEncoder;
 
 	public String addUser(UserInfo userInfo) {

@@ -56,3 +56,10 @@
 2025-05-10T10:19:30.926+05:30  INFO 15392 --- [DoctorSchedulingAndManagementModule] [restartedMain] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 8083
 2025-05-10T10:19:30.939+05:30  INFO 15392 --- [DoctorSchedulingAndManagementModule] [restartedMain] SchedulingAndManagementModuleApplication : Started DoctorSchedulingAndManagementModuleApplication in 9.599 seconds (process running for 11.244)
 2025-05-10T10:24:30.495+05:30  INFO 15392 --- [DoctorSchedulingAndManagementModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-10T10:29:30.508+05:30  INFO 15392 --- [DoctorSchedulingAndManagementModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-10T10:34:30.520+05:30  INFO 15392 --- [DoctorSchedulingAndManagementModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-10T10:39:30.534+05:30  INFO 15392 --- [DoctorSchedulingAndManagementModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-10T10:44:30.540+05:30  INFO 15392 --- [DoctorSchedulingAndManagementModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-10T10:49:30.552+05:30  INFO 15392 --- [DoctorSchedulingAndManagementModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-10T10:54:30.556+05:30  INFO 15392 --- [DoctorSchedulingAndManagementModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-10T10:59:30.558+05:30  INFO 15392 --- [DoctorSchedulingAndManagementModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration

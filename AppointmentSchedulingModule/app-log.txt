@@ -56,3 +56,10 @@
 2025-05-10T10:18:14.201+05:30  INFO 8044 --- [AppointmentSchedulingModule] [restartedMain] p.AppointmentSchedulingModuleApplication : Started AppointmentSchedulingModuleApplication in 8.755 seconds (process running for 10.281)
 2025-05-10T10:18:14.227+05:30  INFO 8044 --- [AppointmentSchedulingModule] [DiscoveryClient-InstanceInfoReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_APPOINTMENTSCHEDULINGMODULE/LTIN620025.cts.com:AppointmentSchedulingModule:8082 - registration status: 204
 2025-05-10T10:23:13.794+05:30  INFO 8044 --- [AppointmentSchedulingModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-10T10:28:13.801+05:30  INFO 8044 --- [AppointmentSchedulingModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-10T10:33:13.812+05:30  INFO 8044 --- [AppointmentSchedulingModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-10T10:38:13.825+05:30  INFO 8044 --- [AppointmentSchedulingModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-10T10:43:13.827+05:30  INFO 8044 --- [AppointmentSchedulingModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-10T10:48:13.831+05:30  INFO 8044 --- [AppointmentSchedulingModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-10T10:53:13.833+05:30  INFO 8044 --- [AppointmentSchedulingModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-10T10:58:13.839+05:30  INFO 8044 --- [AppointmentSchedulingModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration

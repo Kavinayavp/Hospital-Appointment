@@ -1,6 +1,5 @@
  package com.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,11 +18,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.filter.JwtAuthFilter;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    @Autowired
+   
     private JwtAuthFilter authFilter;
 
     //authentication
@@ -37,7 +39,7 @@ public class SecurityConfig {
         return http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/auth/authenticate", "/auth/getroles/**", "/auth/**").permitAll())
-                .authorizeHttpRequests(requests -> requests.requestMatchers("/employee/**","/department/**")
+                .authorizeHttpRequests(requests -> requests.requestMatchers("/patients/**","/appointment/**","/doctor/**","/history/**","/notification/**")
                         .authenticated())
                 .sessionManagement(management -> management
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
