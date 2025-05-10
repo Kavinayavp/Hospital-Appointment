@@ -58,10 +58,9 @@ public class DoctorServiceImpl implements DoctorService {
 
 	@Override
 	public DoctorDTO getDoctorById(Long doctorId) {
-		return doctorRepository.findById(doctorId)
-				.map(this::mapToDTO)
+		return doctorRepository.findById(doctorId).map(this::mapToDTO)
 				.orElseThrow(() -> new DoctorNotFoundException("Doctor not found with id " + doctorId));
-	
+
 	}
 
 	@Override
@@ -74,11 +73,12 @@ public class DoctorServiceImpl implements DoctorService {
 
 	@Override
 	public DoctorDTO getDoctorAvailability(String specialization) {
-		Doctor doctor = doctorRepository.findBySpecialization(specialization)
-				.orElseThrow(() -> new DoctorNotFoundException("Doctor not found with specialization " + specialization));
+		Doctor doctor = doctorRepository.findBySpecialization(specialization).orElseThrow(
+				() -> new DoctorNotFoundException("Doctor not found with specialization " + specialization));
 		return DoctorDTO.builder().doctorId(doctor.getDoctorId()).doctorName(doctor.getDoctorName())
-				.specialization(doctor.getSpecialization()).availableDays(doctor.getAvailableDays())
-				.availableTime(doctor.getAvailableTime()).build();
+				.specialization(doctor.getSpecialization()).experience(doctor.getExperience())
+				.contactNumber(doctor.getContactNumber()).email(doctor.getEmail())
+				.availableDays(doctor.getAvailableDays()).availableTime(doctor.getAvailableTime()).build();
 	}
 
 }

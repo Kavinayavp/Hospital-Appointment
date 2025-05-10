@@ -19,6 +19,13 @@ public class MedicalHistory {
     @NotNull(message = "Patient ID is required")
     private Long patientId;
 
+    @NotNull(message = "Patient ID is required")
+    private Long doctorId;
+    
+    @NotBlank(message = "Patient name is required")
+    @Size(max = 50, message = "Patient name should not exceed 50 characters")
+    private String patientName;
+
     @NotBlank(message = "Illness is required")
     @Size(max = 100, message = "Illness should not exceed 100 characters")
     private String illness;

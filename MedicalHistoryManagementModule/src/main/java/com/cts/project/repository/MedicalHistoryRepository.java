@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface MedicalHistoryRepository extends JpaRepository<MedicalHistory, Long> {
     
     List<MedicalHistory> findByPatientId(Long patientId);
-    Optional<List<MedicalHistory>> findOptionalByPatientId(Long patientId);
+   
 }
 

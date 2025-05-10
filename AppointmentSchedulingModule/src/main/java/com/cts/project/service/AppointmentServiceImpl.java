@@ -3,6 +3,7 @@ package com.cts.project.service;
 import com.cts.project.dto.AppointmentDTO;
 import com.cts.project.dto.DoctorResponseDTO;
 import com.cts.project.exception.AppointmentNotFoundException;
+import com.cts.project.exception.UnauthorizedAccessException;
 import com.cts.project.feignclient.DoctorClient;
 import com.cts.project.feignclient.PatientClient;
 import com.cts.project.model.Appointment;
@@ -13,100 +14,128 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class AppointmentServiceImpl implements AppointmentService {
 
-	private final AppointmentRepository appointmentRepository;
-	private final PatientClient patientClient;
-	private final DoctorClient doctorClient;
+    private static final Logger LOGGER = Logger.getLogger(AppointmentServiceImpl.class.getName());
 
-	@Override
-	public String bookAppointment(AppointmentDTO dto) {
-		try {
-			// Fetch doctor details using Feign Client
-			DoctorResponseDTO doctorResponse = doctorClient.getDoctorById(dto.getDoctorId());
-			if (doctorResponse == null) {
-				throw new AppointmentNotFoundException("Doctor not found with ID: " + dto.getDoctorId());
-			}
+    private final AppointmentRepository appointmentRepository;
+    private final PatientClient patientClient;
+    private final DoctorClient doctorClient;
 
-			// Validate doctor's available days
-			String appointmentDay = LocalDate.parse(dto.getAppointmentDate()).getDayOfWeek().name(); // e.g., MONDAY
-			if (!doctorResponse.getAvailableDays().stream().map(String::toUpperCase).toList()
-					.contains(appointmentDay)) {
-				return "Doctor is not available on " + appointmentDay;
-			}
+    @Override
+    public String bookAppointment(AppointmentDTO dto) {
+        try {
+            // Fetch doctor details using Feign Client
+            DoctorResponseDTO doctorResponse = doctorClient.getDoctorById(dto.getDoctorId());
+            if (doctorResponse == null) {
+                throw new AppointmentNotFoundException("Doctor not found with ID: " + dto.getDoctorId());
+            }
 
-			// Proceed with booking
-			Appointment appointment = new Appointment();
-			appointment.setDoctorId(dto.getDoctorId());
-			appointment.setPatientId(dto.getPatientId());
-			appointment.setAppointmentDate(dto.getAppointmentDate());
-			appointment.setAppointmentTime(dto.getAppointmentTime());
-			appointment.setStatus("BOOKED");
+            // Validate doctor's available days
+            String appointmentDay = LocalDate.parse(dto.getAppointmentDate()).getDayOfWeek().name();
+            if (!doctorResponse.getAvailableDays().stream().map(String::toUpperCase).toList()
+                    .contains(appointmentDay)) {
+                return "Doctor is not available on " + appointmentDay;
+            }
 
-			appointmentRepository.save(appointment);
-			return "Appointment booked successfully!";
-		} catch (FeignException.NotFound e) {
-			return "Doctor not found with ID: " + dto.getDoctorId();
-		} catch (Exception e) {
-			return "Error fetching doctor details: " + e.getMessage();
-		}
-	}
+            // Proceed with booking
+            Appointment appointment = new Appointment();
+            appointment.setDoctorId(dto.getDoctorId());
+            appointment.setDoctorName(dto.getDoctorName());
+            appointment.setPatientId(dto.getPatientId());
+            appointment.setPatientName(dto.getPatientName());
+            appointment.setAppointmentDate(dto.getAppointmentDate());
+            appointment.setAppointmentTime(dto.getAppointmentTime());
+            appointment.setStatus("BOOKED");
 
-	@Override
-	public AppointmentDTO updateAppointment(Long id, AppointmentDTO dto) {
-		Appointment appointment = appointmentRepository.findById(id)
-				.orElseThrow(() -> new AppointmentNotFoundException("Appointment not found with ID: " + id));
+            appointmentRepository.save(appointment);
+            return "Appointment booked successfully!";
+        } catch (FeignException.NotFound e) {
+            return "Doctor not found with ID: " + dto.getDoctorId();
+        } catch (Exception e) {
+            return "Error fetching doctor details: " + e.getMessage();
+        }
+    }
 
-		boolean rescheduled = !appointment.getAppointmentDate().equals(dto.getAppointmentDate())
-				|| !appointment.getAppointmentTime().equals(dto.getAppointmentTime());
+    @Override
+    public String updateAppointment(Long appointmentId, Long patientId, AppointmentDTO dto) {
+    	 if (appointmentId == null || patientId == null) {
+    	        throw new IllegalArgumentException("Appointment ID and Patient ID must not be null");
+    	    }
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new AppointmentNotFoundException("Appointment not found with ID: " + appointmentId));
 
-		appointment.setAppointmentDate(dto.getAppointmentDate());
-		appointment.setAppointmentTime(dto.getAppointmentTime());
+        // Validate patient authorization
+        if (!appointment.getPatientId().equals(patientId)) {
+            throw new UnauthorizedAccessException("Unauthorized: Cannot update another patient's appointment.");
+        }
 
-		if ("CANCELLED".equalsIgnoreCase(dto.getStatus())) {
-			appointment.setStatus("CANCELLED");
-		} else if (rescheduled) {
-			appointment.setStatus("RESCHEDULED");
-		} else {
-			appointment.setStatus("BOOKED");
-		}
+        boolean rescheduled = !appointment.getAppointmentDate().equals(dto.getAppointmentDate())
+                || !appointment.getAppointmentTime().equals(dto.getAppointmentTime());
 
-		Appointment updated = appointmentRepository.save(appointment);
-		return mapToDTO(updated);
-	}
+        appointment.setAppointmentDate(dto.getAppointmentDate());
+        appointment.setAppointmentTime(dto.getAppointmentTime());
 
-	@Override
-	public AppointmentDTO getAppointmentById(Long appointmentId) {
-		Appointment appointment = appointmentRepository.findById(appointmentId)
-				.orElseThrow(() -> new AppointmentNotFoundException("Appointment not found with ID: " + appointmentId));
-		return mapToDTO(appointment);
-	}
+        String updatedStatus;
+        if ("CANCEL".equalsIgnoreCase(dto.getStatus())) {
+            updatedStatus = "CANCELLED";
+            LOGGER.info("Appointment cancelled successfully.");
+        } else if ("RESHEDULE".equalsIgnoreCase(dto.getStatus())) {
+            updatedStatus = "RESCHEDULED";
+            LOGGER.info("Appointment rescheduled successfully.");
+        } else {
+            updatedStatus = "BOOKED";
+        }
 
-	@Override
-	public List<AppointmentDTO> getAppointmentsByPatientId(Long patientId) {
-		List<Appointment> appointments = appointmentRepository.findByPatientId(patientId);
-		return appointments.stream().map(this::mapToDTO).collect(Collectors.toList());
-	}
+        appointment.setStatus(updatedStatus);
+        appointmentRepository.save(appointment);
 
-	@Override
-	public void deleteAppointment(Long appointmentId) {
-		Appointment appointment = appointmentRepository.findById(appointmentId)
-				.orElseThrow(() -> new AppointmentNotFoundException("Appointment not found with ID: " + appointmentId));
-		appointmentRepository.delete(appointment);
-	}
+        return updatedStatus; //  Return the updated status directly instead of an object
+    }
 
-	private AppointmentDTO mapToDTO(Appointment appointment) {
-		AppointmentDTO dto = new AppointmentDTO();
-		dto.setAppointmentId(appointment.getAppointmentId());
-		dto.setDoctorId(appointment.getDoctorId());
-		dto.setPatientId(appointment.getPatientId());
-		dto.setAppointmentDate(appointment.getAppointmentDate());
-		dto.setAppointmentTime(appointment.getAppointmentTime());
-		dto.setStatus(appointment.getStatus());
-		return dto;
-	}
+    @Override
+    public AppointmentDTO getAppointmentById(Long appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new AppointmentNotFoundException("Appointment not found with ID: " + appointmentId));
+        return mapToDTO(appointment);
+    }
+
+    @Override
+    public List<AppointmentDTO> getAppointmentsByPatientId(Long patientId) {
+        List<Appointment> appointments = appointmentRepository.findByPatientId(patientId);
+        return appointments.stream().map(this::mapToDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public String deleteAppointment(Long appointmentId, Long patientId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new AppointmentNotFoundException("Appointment not found with ID: " + appointmentId));
+
+        // Validate patient authorization
+        if (!appointment.getPatientId().equals(patientId)) {
+            throw new UnauthorizedAccessException("Unauthorized: Cannot delete another patient's appointment.");
+        }
+
+        appointmentRepository.delete(appointment);
+        LOGGER.info("Appointment deleted successfully.");
+        return "Appointment deleted successfully!";
+    }
+
+    private AppointmentDTO mapToDTO(Appointment appointment) {
+        return AppointmentDTO.builder()
+                .appointmentId(appointment.getAppointmentId())
+                .doctorId(appointment.getDoctorId())
+                .doctorName(appointment.getDoctorName())
+                .patientId(appointment.getPatientId())
+                .patientName(appointment.getPatientName())
+                .appointmentDate(appointment.getAppointmentDate())
+                .appointmentTime(appointment.getAppointmentTime())
+                .status(appointment.getStatus())
+                .build();
+    }
 }

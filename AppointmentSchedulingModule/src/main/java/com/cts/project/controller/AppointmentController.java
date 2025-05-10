@@ -29,24 +29,26 @@ public class AppointmentController {
         return appointmentService.bookAppointment(dto);
     }
  
-    @PutMapping("/update/{id}")
-    public String update(@PathVariable Long id, @Valid @RequestBody AppointmentDTO dto) {
-        appointmentService.updateAppointment(id, dto);
-        return "Appointment updated successfully";
+   
+    @PutMapping("/update/{appointmentId}/{patientId}")
+    public String updateAppointment(Long appointmentId, Long patientId, AppointmentDTO dto){
+        return appointmentService.updateAppointment(appointmentId, patientId, dto);
     }
+
+    @DeleteMapping("/deleteappointment/{appointmentId}/{patientId}")
+    public String delete(@PathVariable Long appointmentId, @PathVariable Long patientId) {
+        return appointmentService.deleteAppointment(appointmentId, patientId);
+    }
+
  
-    @GetMapping("/getappointmentbyid/{appid}")
-    public AppointmentDTO getById(@PathVariable Long appid) {
-        return appointmentService.getAppointmentById(appid);
+    @GetMapping("/getappointmentbyid/{appointmentid}")
+    public AppointmentDTO getById(@PathVariable Long appointmentid) {
+        return appointmentService.getAppointmentById(appointmentid);
     }
  
     @GetMapping("/getappointmentbypatientid/{patientId}")
     public List<AppointmentDTO> getByPatientId(@PathVariable Long patientId) {
         return appointmentService.getAppointmentsByPatientId(patientId);
     }
-    @DeleteMapping("/deleteappointment/{id}")
-    public String delete(@PathVariable Long id) {
-        appointmentService.deleteAppointment(id);
-        return "Appointment deleted successfully";
-    }
+  
 }

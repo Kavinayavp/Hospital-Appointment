@@ -18,9 +18,17 @@ public class Appointment {
 
     @NotNull(message = "Patient ID is required")
     private Long patientId;
+    
+    @NotBlank(message = "Patient name is required")
+    @Size(max = 50, message = "Patient name should not exceed 50 characters")
+    private String patientName;
 
     @NotNull(message = "Doctor ID is required")
     private Long doctorId;
+    
+    @NotBlank(message = "Doctor name is required")
+    @Size(max = 50, message = "Doctor name should not exceed 50 characters")
+    private String doctorName;
 
     @NotBlank(message = "Appointment date is required")
     @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Appointment date must be in YYYY-MM-DD format")

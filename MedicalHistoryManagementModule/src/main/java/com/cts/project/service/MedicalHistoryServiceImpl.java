@@ -15,36 +15,39 @@ import com.cts.project.repository.MedicalHistoryRepository;
 
 import feign.FeignException;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
  
 @Service
-@RequiredArgsConstructor
 @AllArgsConstructor
 public class MedicalHistoryServiceImpl implements MedicalHistoryService {
-	
-    private MedicalHistoryRepository repository;
-    
-	 @Autowired
-	    private DoctorClient doctorClient;
-	 
-	 @Override
-	 public MedicalHistoryDTO saveMedicalHistory(MedicalHistoryDTO dto) {
-	     try {
-	         // Fetch doctor details using Feign Client
-	         DoctorResponseDTO doctor = doctorClient.getDoctorById(dto.getDoctorId());
-	         if (doctor == null) {
-	             throw new RuntimeException("Doctor not found with ID: " + dto.getDoctorId());
-	         }
 
-	         dto.setDoctorName(doctor.getDoctorName()); // Set Doctor Name in DTO
-	         MedicalHistory history = repository.save(mapToEntity(dto));
-	         return mapToDTO(history);
-	     } catch (FeignException.NotFound e) { // Catch Feign client 404 errors
-	         throw new RuntimeException("Doctor not found with ID: " + dto.getDoctorId());
-	     } catch (Exception e) {
-	         throw new RuntimeException("Error fetching doctor details: " + e.getMessage());
-	     }
-	 }
+    private final MedicalHistoryRepository repository;  // ✅ Use 'final' to ensure correct injection
+
+    @Autowired
+    private final DoctorClient doctorClient; // ✅ Ensure this is correctly autowired
+    
+    @Override
+    public MedicalHistoryDTO saveMedicalHistory(MedicalHistoryDTO dto) {
+        try {
+            if (dto.getDoctorId() == null) {
+                throw new IllegalArgumentException("Doctor ID is required.");
+            }
+
+            DoctorResponseDTO doctor = doctorClient.getDoctorById(dto.getDoctorId());
+            if (doctor == null) {
+                throw new RuntimeException("Doctor not found with ID: " + dto.getDoctorId());
+            }
+
+            dto.setDoctorName(doctor.getDoctorName()); // ✅ Set doctor name before saving
+            MedicalHistory history = repository.save(mapToEntity(dto));
+            return mapToDTO(history);
+        } catch (FeignException.NotFound e) {
+            throw new RuntimeException("Doctor not found with ID: " + dto.getDoctorId());
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching doctor details: " + e.getMessage());
+        }
+    }
+
+
 	    @Override
 	    public MedicalHistoryDTO updateMedicalHistory(Long id, MedicalHistoryDTO dto) {
 	        MedicalHistory existing = repository.findById(id)
@@ -70,8 +73,10 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
         return MedicalHistoryDTO.builder()
                 .historyId(history.getHistoryId())
                 .patientId(history.getPatientId())
+                .patientName(history.getPatientName())
                 .illness(history.getIllness())
                 .treatment(history.getTreatment())
+                .doctorId(history.getDoctorId())
                 .doctorName(history.getDoctorName())
                 .visitDate(history.getVisitDate())
                 .prescription(history.getPrescription())
@@ -82,8 +87,10 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
         return MedicalHistory.builder()
                 .historyId(dto.getHistoryId())
                 .patientId(dto.getPatientId())
+                .patientName(dto.getPatientName())
                 .illness(dto.getIllness())
                 .treatment(dto.getTreatment())
+                .doctorId(dto.getDoctorId())
                 .doctorName(dto.getDoctorName())
                 .visitDate(dto.getVisitDate())
                 .prescription(dto.getPrescription())
@@ -98,12 +105,15 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
     }
  
     @Override
-    public void deleteMedicalHistory(Long id) {
+    public String deleteMedicalHistory(Long id) {
         if (!repository.existsById(id)) {
-            throw new MedicalHistoryNotFoundException("History not found");
+            throw new MedicalHistoryNotFoundException("History not found for ID: " + id);
         }
+        
         repository.deleteById(id);
+        return "Medical history with ID " + id + " deleted successfully.";
     }
+
 
 	@Override
 	public List<MedicalHistoryDTO> getAllMedicalHistory() {

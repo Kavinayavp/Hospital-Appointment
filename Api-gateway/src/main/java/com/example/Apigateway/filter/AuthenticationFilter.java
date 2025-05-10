@@ -62,9 +62,9 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
         if ("ADMIN".equalsIgnoreCase(role)) {
             return path.startsWith("/patients") || path.startsWith("/appointments") || path.startsWith("/doctor") || path.startsWith("/history") || path.startsWith("/notifications");
         } else if ("DOCTOR".equalsIgnoreCase(role)) {
-            return path.startsWith("/patients") || path.startsWith("/appointments") || path.startsWith("/history");
+            return path.startsWith("/doctor")  || path.startsWith("/patients") && method.equalsIgnoreCase("GET") || path.startsWith("/appointments") && method.equalsIgnoreCase("GET") || path.startsWith("/history");
         } else if ("PATIENT".equalsIgnoreCase(role)) {
-            return (path.startsWith("/patients") || path.startsWith("/appointments")) && method.equalsIgnoreCase("GET");
+            return path.startsWith("/patients") || path.startsWith("/appointments") || path.startsWith("/doctor") && method.equalsIgnoreCase("GET");
         }
         return false;
     }
