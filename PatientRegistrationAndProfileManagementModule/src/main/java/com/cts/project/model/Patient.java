@@ -7,11 +7,11 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 @Entity
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "PatientDetails")
 public class Patient {
 
     @Id

@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "NotificationDetails")
 public class Notification {
 
     @Id

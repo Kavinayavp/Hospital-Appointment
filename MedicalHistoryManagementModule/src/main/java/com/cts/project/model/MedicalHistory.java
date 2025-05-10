@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "MedicalHistoryDetails")
 public class MedicalHistory {
 
     @Id
