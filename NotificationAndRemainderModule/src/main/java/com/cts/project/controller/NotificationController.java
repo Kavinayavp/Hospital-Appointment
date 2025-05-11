@@ -30,15 +30,10 @@ public class NotificationController {
         return service.getNotificationsByPatientId(patientId);
     }
 
-    @GetMapping("/appointment/{appointmentId}/notify")
+    @GetMapping("/appointments/{appointmentId}/notify")
     public String notifyAppointment(@PathVariable Long appointmentId) {
         logger.info("Sending appointment notification for Appointment ID: {}", appointmentId);
         return service.notifyAppointmentStatus(appointmentId);
     }
 
-    @GetMapping("/history/{patientId}/notify")
-    public String notifyMedicalHistory(@PathVariable Long patientId) {
-        logger.info("Sending medical history notification for Patient ID: {}", patientId);
-        return service.notifyLatestHistory(patientId);
-    }
 }

@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.cts.project.dto.AppointmentResponseDTO;
-import com.cts.project.dto.MedicalHistoryResponseDTO;
 import com.cts.project.dto.NotificationDTO;
 import com.cts.project.dto.PatientResponseDTO;
 import com.cts.project.exception.NotificationNotFoundException;
@@ -55,25 +54,7 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
-    /** ✅ Notify Patient About Medical History Updates **/
-    public String notifyLatestHistory(Long patientId) {
-        try {
-            List<MedicalHistoryResponseDTO> historyList = medicalHistoryClient.getHistoryByPatientId(patientId);
-            if (!historyList.isEmpty()) {
-                MedicalHistoryResponseDTO latest = historyList.get(historyList.size() - 1);
-                sendNotificationToPatient(patientId, "New medical history added: " + latest.getIllness() + " treated by Dr. " + latest.getDoctorName());
-                logger.info("Notification sent for patient medical history: {}", latest);
-                return "Notification sent successfully for Patient ID: " + patientId;
-            }
-            return "No medical history found for Patient ID: " + patientId;
-        } catch (FeignException.NotFound e) {
-            logger.error("Medical history not found for patient ID: {}", patientId);
-            return "Medical history not found for Patient ID: " + patientId;
-        } catch (Exception e) {
-            logger.error("Error fetching medical history: {}", e.getMessage());
-            return "Error fetching medical history: " + e.getMessage();
-        }
-    }
+   
 
     public String sendNotificationToPatient(Long patientId, String message) {
         try {

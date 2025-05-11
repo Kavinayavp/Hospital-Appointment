@@ -3,6 +3,8 @@ package com.cts.project.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,72 +15,131 @@ import com.cts.project.repository.DoctorRepository;
 
 @Service
 public class DoctorServiceImpl implements DoctorService {
-	@Autowired
-	private DoctorRepository doctorRepository;
 
-	private DoctorDTO mapToDTO(Doctor doctor) {
-		return DoctorDTO.builder().doctorId(doctor.getDoctorId()).doctorName(doctor.getDoctorName())
-				.specialization(doctor.getSpecialization()).experience(doctor.getExperience())
-				.contactNumber(doctor.getContactNumber()).email(doctor.getEmail())
-				.availableDays(doctor.getAvailableDays()).availableTime(doctor.getAvailableTime()).build();
-	}
+    private static final Logger LOGGER = LoggerFactory.getLogger(DoctorServiceImpl.class);
 
-	private Doctor mapToEntity(DoctorDTO dto) {
-		return Doctor.builder().doctorId(dto.getDoctorId()).doctorName(dto.getDoctorName())
-				.specialization(dto.getSpecialization()).experience(dto.getExperience())
-				.contactNumber(dto.getContactNumber()).email(dto.getEmail()).availableDays(dto.getAvailableDays())
-				.availableTime(dto.getAvailableTime()).build();
-	}
+    @Autowired
+    private DoctorRepository doctorRepository;
 
-	@Override
-	public DoctorDTO saveDoctor(DoctorDTO dto) {
-		return mapToDTO(doctorRepository.save(mapToEntity(dto)));
-	}
+    /**
+     * Maps a Doctor entity to a DoctorDTO object.
+     */
+    private DoctorDTO mapToDTO(Doctor doctor) {
+        LOGGER.debug("Mapping Doctor entity to DTO for Doctor ID: {}", doctor.getDoctorId());
+        return DoctorDTO.builder()
+                .doctorId(doctor.getDoctorId())
+                .doctorName(doctor.getDoctorName())
+                .specialization(doctor.getSpecialization())
+                .experience(doctor.getExperience())
+                .contactNumber(doctor.getContactNumber())
+                .email(doctor.getEmail())
+                .availableDays(doctor.getAvailableDays())
+                .availableTime(doctor.getAvailableTime())
+                .build();
+    }
 
-	@Override
-	public DoctorDTO updateDoctor(Long doctorId, DoctorDTO dto) {
-		Doctor doctor = doctorRepository.findById(doctorId)
-				.orElseThrow(() -> new DoctorNotFoundException("Doctor not found with id " + doctorId));
+    /**
+     * Maps a DoctorDTO object to a Doctor entity.
+     */
+    private Doctor mapToEntity(DoctorDTO dto) {
+        LOGGER.debug("Mapping Doctor DTO to entity for Doctor ID: {}", dto.getDoctorId());
+        return Doctor.builder()
+                .doctorId(dto.getDoctorId())
+                .doctorName(dto.getDoctorName())
+                .specialization(dto.getSpecialization())
+                .experience(dto.getExperience())
+                .contactNumber(dto.getContactNumber())
+                .email(dto.getEmail())
+                .availableDays(dto.getAvailableDays())
+                .availableTime(dto.getAvailableTime())
+                .build();
+    }
 
-		doctor.setDoctorName(dto.getDoctorName());
-		doctor.setSpecialization(dto.getSpecialization());
-		doctor.setExperience(dto.getExperience());
-		doctor.setContactNumber(dto.getContactNumber());
-		doctor.setEmail(dto.getEmail());
-		doctor.setAvailableDays(dto.getAvailableDays());
-		doctor.setAvailableTime(dto.getAvailableTime());
+    /**
+     * Saves a new doctor in the database.
+     */
+    @Override
+    public DoctorDTO saveDoctor(DoctorDTO dto) {
+        LOGGER.info("Saving new Doctor with name: {}", dto.getDoctorName());
+        return mapToDTO(doctorRepository.save(mapToEntity(dto)));
+    }
 
-		return mapToDTO(doctorRepository.save(doctor));
-	}
+    /**
+     * Updates an existing doctor's details.
+     */
+    @Override
+    public DoctorDTO updateDoctor(Long doctorId, DoctorDTO dto) {
+        LOGGER.info("Updating Doctor with ID: {}", doctorId);
 
-	@Override
-	public List<DoctorDTO> getAllDoctors() {
-		return doctorRepository.findAll().stream().map(this::mapToDTO).collect(Collectors.toList());
-	}
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new DoctorNotFoundException("Doctor not found with id " + doctorId));
 
-	@Override
-	public DoctorDTO getDoctorById(Long doctorId) {
-		return doctorRepository.findById(doctorId).map(this::mapToDTO)
-				.orElseThrow(() -> new DoctorNotFoundException("Doctor not found with id " + doctorId));
+        doctor.setDoctorName(dto.getDoctorName());
+        doctor.setSpecialization(dto.getSpecialization());
+        doctor.setExperience(dto.getExperience());
+        doctor.setContactNumber(dto.getContactNumber());
+        doctor.setEmail(dto.getEmail());
+        doctor.setAvailableDays(dto.getAvailableDays());
+        doctor.setAvailableTime(dto.getAvailableTime());
 
-	}
+        return mapToDTO(doctorRepository.save(doctor));
+    }
 
-	@Override
-	public void deleteDoctor(Long doctorId) {
-		if (!doctorRepository.existsById(doctorId)) {
-			throw new DoctorNotFoundException("Doctor not found with id " + doctorId);
-		}
-		doctorRepository.deleteById(doctorId);
-	}
+    /**
+     * Retrieves a list of all doctors in the system.
+     */
+    @Override
+    public List<DoctorDTO> getAllDoctors() {
+        LOGGER.info("Fetching all doctors from database.");
+        return doctorRepository.findAll().stream().map(this::mapToDTO).collect(Collectors.toList());
+    }
 
-	@Override
-	public DoctorDTO getDoctorAvailability(String specialization) {
-		Doctor doctor = doctorRepository.findBySpecialization(specialization).orElseThrow(
-				() -> new DoctorNotFoundException("Doctor not found with specialization " + specialization));
-		return DoctorDTO.builder().doctorId(doctor.getDoctorId()).doctorName(doctor.getDoctorName())
-				.specialization(doctor.getSpecialization()).experience(doctor.getExperience())
-				.contactNumber(doctor.getContactNumber()).email(doctor.getEmail())
-				.availableDays(doctor.getAvailableDays()).availableTime(doctor.getAvailableTime()).build();
-	}
+    /**
+     * Fetches a doctor's details by their unique ID.
+     */
+    @Override
+    public DoctorDTO getDoctorById(Long doctorId) {
+        LOGGER.info("Fetching Doctor details for ID: {}", doctorId);
+        return doctorRepository.findById(doctorId)
+                .map(this::mapToDTO)
+                .orElseThrow(() -> new DoctorNotFoundException("Doctor not found with id " + doctorId));
+    }
 
+    /**
+     * Deletes a doctor by their unique ID.
+     */
+    @Override
+    public void deleteDoctor(Long doctorId) {
+        LOGGER.info("Deleting Doctor with ID: {}", doctorId);
+
+        if (!doctorRepository.existsById(doctorId)) {
+            LOGGER.error("Doctor not found with ID: {}", doctorId);
+            throw new DoctorNotFoundException("Doctor not found with id " + doctorId);
+        }
+
+        doctorRepository.deleteById(doctorId);
+        LOGGER.info("Doctor deleted successfully.");
+    }
+
+    /**
+     * Fetches a doctor's availability based on specialization.
+     */
+    @Override
+    public DoctorDTO getDoctorAvailability(String specialization) {
+        LOGGER.info("Fetching Doctor availability for specialization: {}", specialization);
+
+        Doctor doctor = doctorRepository.findBySpecialization(specialization)
+                .orElseThrow(() -> new DoctorNotFoundException("Doctor not found with specialization " + specialization));
+
+        return DoctorDTO.builder()
+                .doctorId(doctor.getDoctorId())
+                .doctorName(doctor.getDoctorName())
+                .specialization(doctor.getSpecialization())
+                .experience(doctor.getExperience())
+                .contactNumber(doctor.getContactNumber())
+                .email(doctor.getEmail())
+                .availableDays(doctor.getAvailableDays())
+                .availableTime(doctor.getAvailableTime())
+                .build();
+    }
 }
