@@ -70,9 +70,15 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     public DoctorDTO updateDoctor(Long doctorId, DoctorDTO dto) {
         LOGGER.info("Updating Doctor with ID: {}", doctorId);
+        LOGGER.info("Received Update Request: {}", dto); // ✅ Log incoming request
 
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new DoctorNotFoundException("Doctor not found with id " + doctorId));
+
+        // ✅ Validate Available Time Format
+        if (!dto.getAvailableTime().matches("^([0-9]{2}:[0-9]{2} (AM|PM) - [0-9]{2}:[0-9]{2} (AM|PM))$")) {
+            throw new IllegalArgumentException("Invalid availableTime format! Must be HH:MM AM/PM - HH:MM AM/PM.");
+        }
 
         doctor.setDoctorName(dto.getDoctorName());
         doctor.setSpecialization(dto.getSpecialization());
@@ -82,7 +88,14 @@ public class DoctorServiceImpl implements DoctorService {
         doctor.setAvailableDays(dto.getAvailableDays());
         doctor.setAvailableTime(dto.getAvailableTime());
 
-        return mapToDTO(doctorRepository.save(doctor));
+        try {
+            doctorRepository.save(doctor);
+            LOGGER.info("Doctor updated successfully for ID: {}", doctorId);
+            return mapToDTO(doctor);
+        } catch (Exception e) {
+            LOGGER.error("Error updating doctor details: {}", e.getMessage());
+            throw new RuntimeException("Failed to update doctor details. Please check the input data.");
+        }
     }
 
     /**
@@ -125,13 +138,16 @@ public class DoctorServiceImpl implements DoctorService {
      * Fetches a doctor's availability based on specialization.
      */
     @Override
-    public DoctorDTO getDoctorAvailability(String specialization) {
+    public List<DoctorDTO> getDoctorAvailability(String specialization) {
         LOGGER.info("Fetching Doctor availability for specialization: {}", specialization);
 
-        Doctor doctor = doctorRepository.findBySpecialization(specialization)
-                .orElseThrow(() -> new DoctorNotFoundException("Doctor not found with specialization " + specialization));
+        List<Doctor> doctors = doctorRepository.findBySpecialization(specialization);
 
-        return DoctorDTO.builder()
+        if (doctors.isEmpty()) {
+            throw new DoctorNotFoundException("No doctors found for specialization: " + specialization);
+        }
+
+        return doctors.stream().map(doctor -> DoctorDTO.builder()
                 .doctorId(doctor.getDoctorId())
                 .doctorName(doctor.getDoctorName())
                 .specialization(doctor.getSpecialization())
@@ -140,6 +156,7 @@ public class DoctorServiceImpl implements DoctorService {
                 .email(doctor.getEmail())
                 .availableDays(doctor.getAvailableDays())
                 .availableTime(doctor.getAvailableTime())
-                .build();
+                .build()).toList();
     }
+
 }

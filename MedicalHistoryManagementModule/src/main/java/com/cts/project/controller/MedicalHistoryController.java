@@ -1,19 +1,13 @@
 package com.cts.project.controller;
 
 import java.util.List;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.cts.project.dto.MedicalHistoryDTO;
-import com.cts.project.exception.UnauthorizedAccessException;
-import com.cts.project.feignclient.AppointmentClient;
-import com.cts.project.model.Appointment;
 import com.cts.project.service.MedicalHistoryService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
@@ -21,84 +15,39 @@ import org.springframework.beans.factory.annotation.Autowired;
 @RequiredArgsConstructor
 public class MedicalHistoryController {
 
-   @Autowired
-   private final MedicalHistoryService medicalHistoryService;
+    @Autowired
+    private final MedicalHistoryService medicalHistoryService;
 
-   @Autowired
-   private final AppointmentClient appointmentClient; // ✅ Inject Feign Client for doctor-patient validation
+    /** ✅ Save medical history without appointment validation */
+    @PostMapping("/save")
+    public String save(@Valid @RequestBody MedicalHistoryDTO dto) {
+        medicalHistoryService.saveMedicalHistory(dto);
+        return "Medical history saved successfully.";
+    }
 
-   @PostMapping("/save")
-   public ResponseEntity<String> save(@Valid @RequestBody MedicalHistoryDTO dto) {
-       try {
-           // ✅ Validate appointment before saving history
-           Appointment appointment = appointmentClient.getAppointmentByDoctorIdAndPatientId(dto.getDoctorId(), dto.getPatientId());
+    /** ✅ Update medical history just using patientId */
+    @PutMapping("/update/{patientId}")
+    public String update(@PathVariable Long patientId, @Valid @RequestBody MedicalHistoryDTO dto) {
+        medicalHistoryService.updateMedicalHistory(patientId, dto);
+        return "Medical history updated successfully.";
+    }
 
-           if (appointment == null) {
-               throw new UnauthorizedAccessException("Doctor with ID " + dto.getDoctorId() + " did not attend patient with ID " + dto.getPatientId());
-           }
+    /** ✅ Get all medical histories */
+    @GetMapping("/getallhistory")
+    public List<MedicalHistoryDTO> getAllMedicalHistory() {
+        return medicalHistoryService.getAllMedicalHistory();
+    }
 
-           medicalHistoryService.saveMedicalHistory(dto);
-           return ResponseEntity.status(HttpStatus.CREATED).body("Medical history saved successfully.");
+    /** ✅ Delete medical history by ID */
+    @DeleteMapping("/delete/{id}")
+    public String delete(@PathVariable Long id) {
+        medicalHistoryService.deleteMedicalHistory(id);
+        return "Medical history deleted successfully.";
+    }
 
-       } catch (FeignException.NotFound e) {
-           return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found for Doctor ID " + dto.getDoctorId() + " and Patient ID " + dto.getPatientId());
-       } catch (FeignException.ServiceUnavailable e) {
-           return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Appointment Service is currently unavailable. Please try again later.");
-       }
-   }
-
-   @PutMapping("/update/{id}")
-   public ResponseEntity<String> update(@PathVariable Long id, @Valid @RequestBody MedicalHistoryDTO dto) {
-       try {
-           // ✅ Validate appointment before updating history
-           Appointment appointment = appointmentClient.getAppointmentByDoctorIdAndPatientId(dto.getDoctorId(), dto.getPatientId());
-
-           if (appointment == null) {
-               throw new UnauthorizedAccessException("Doctor with ID " + dto.getDoctorId() + " did not attend patient with ID " + dto.getPatientId());
-           }
-
-           medicalHistoryService.updateMedicalHistory(id, dto);
-           return ResponseEntity.ok("Medical history updated successfully.");
-
-       } catch (FeignException.NotFound e) {
-           return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found for Doctor ID " + dto.getDoctorId() + " and Patient ID " + dto.getPatientId());
-       } catch (FeignException.ServiceUnavailable e) {
-           return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Appointment Service is currently unavailable. Please try again later.");
-       }
-   }
-
-   @GetMapping("/getallhistory")
-   public ResponseEntity<List<MedicalHistoryDTO>> getAllMedicalHistory() {
-       return ResponseEntity.ok(medicalHistoryService.getAllMedicalHistory());
-   }
-
-   @DeleteMapping("/delete/{id}")
-   public ResponseEntity<String> delete(@PathVariable Long id) {
-       medicalHistoryService.deleteMedicalHistory(id);
-       return ResponseEntity.ok("Medical history deleted successfully.");
-   }
-
-   @GetMapping("/gethistorybypatientid/{patientId}")
-   public ResponseEntity<List<MedicalHistoryDTO>> getHistoryByPatientId(@PathVariable Long patientId) {
-       return ResponseEntity.ok(medicalHistoryService.getMedicalHistoryByPatientId(patientId));
-   }
-
-   // ✅ Fetch appointment details by doctorId and patientId
-   @GetMapping("/find/{doctorId}/{patientId}")
-   public ResponseEntity<?> getAppointmentByDoctorIdAndPatientId(@PathVariable Long doctorId, @PathVariable Long patientId) {
-       try {
-           Appointment appointment = appointmentClient.getAppointmentByDoctorIdAndPatientId(doctorId, patientId);
-           return ResponseEntity.ok(appointment);
-       } catch (FeignException.NotFound e) {
-           return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No appointment found for Doctor ID " + doctorId + " and Patient ID " + patientId);
-       } catch (FeignException.ServiceUnavailable e) {
-           return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Appointment Service is unavailable. Please try again later.");
-       }
-   }
-
-   // ✅ Handle Unauthorized Access Errors Gracefully
-   @ExceptionHandler(UnauthorizedAccessException.class)
-   public ResponseEntity<String> handleUnauthorizedAccess(UnauthorizedAccessException ex) {
-       return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
-   }
+    /** ✅ Fetch medical history by patient ID */
+    @GetMapping("/gethistorybypatientid/{patientId}")
+    public List<MedicalHistoryDTO> getHistoryByPatientId(@PathVariable Long patientId) {
+        return medicalHistoryService.getMedicalHistoryByPatientId(patientId);
+    }
 }

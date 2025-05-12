@@ -166,7 +166,7 @@ class AppointmentServiceImplTest {
         when(appointmentRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(appointmentRepository.save(any(Appointment.class))).thenReturn(existing);
 
-        AppointmentDTO updatedStatus = appointmentService.updateAppointment(1L, 2L, updateDTO); 
+        String updatedStatus = appointmentService.updateAppointment(1L, 2L, updateDTO); 
 
         assertEquals("RESCHEDULED", updatedStatus); 
     }

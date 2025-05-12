@@ -35,20 +35,4 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
         }
         return appointment;
     }
-
-    /**
-     * Finds an appointment based on doctor and patient ID.
-     * @param doctorId The ID of the doctor.
-     * @param patientId The ID of the patient.
-     * @return Optional containing the found appointment or empty if not found.
-     */
-    default Optional<Appointment> findByDoctorIdAndPatientId(Long doctorId, Long patientId) {
-        LOGGER.info("Fetching appointment for Doctor ID: {} and Patient ID: {}", doctorId, patientId);
-        Optional<Appointment> appointment = findByDoctorIdAndPatientId(doctorId, patientId);
-        
-        if (appointment.isEmpty()) {
-            LOGGER.error("No appointment found for Doctor ID {} and Patient ID {}", doctorId, patientId);
-        }
-        return appointment;
-    }
 }

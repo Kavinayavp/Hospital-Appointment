@@ -24,5 +24,5 @@ public interface DoctorService {
     List<DoctorDTO> getAllDoctors();
 
     /** Fetches a doctor's availability based on their specialization. */
-    DoctorDTO getDoctorAvailability(String specialization);
+    List<DoctorDTO> getDoctorAvailability(String specialization);
 }

@@ -59,7 +59,7 @@ public class DoctorController {
 
     /** Fetches a doctor’s availability based on specialization. */
     @GetMapping("/availability/{specialization}")
-    public DoctorDTO getAvailability(@PathVariable String specialization) {
+    public List<DoctorDTO> getAvailability(@PathVariable String specialization) {
         LOGGER.info("Request to check availability for specialization: {}", specialization);
         return service.getDoctorAvailability(specialization);
     }

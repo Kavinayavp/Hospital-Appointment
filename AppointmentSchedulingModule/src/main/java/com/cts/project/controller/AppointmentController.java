@@ -90,14 +90,6 @@ public class AppointmentController {
         return appointmentService.getAppointmentsByPatientId(patientId);
     }
 
-    /**
-     * Fetches an appointment by doctor and patient ID.
-     */
-    @GetMapping(value = "/find/{doctorId}/{patientId}", produces = "application/json")  // ✅ Explicit JSON output
-    public Appointment getAppointmentByDoctorAndPatient(@PathVariable Long doctorId, @PathVariable Long patientId) {
-        LOGGER.info("Request to fetch appointment for Doctor ID: {} and Patient ID: {}", doctorId, patientId);
-        return appointmentService.findByDoctorIdAndPatientId(doctorId, patientId);
-    }
 
     /**
      * Handles general exceptions gracefully.

@@ -2,10 +2,10 @@ package com.cts.project.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.cts.project.dto.PatientDTO;
 import com.cts.project.exception.ResourceNotFoundException;
 import com.cts.project.model.Patient;
@@ -13,21 +13,27 @@ import com.cts.project.repository.PatientRepository;
 
 @Service
 public class PatientServiceImpl implements PatientService {
- 
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PatientServiceImpl.class);
+
     @Autowired
     private PatientRepository patientRepository;
- 
+
+    /** Saves patient details and logs success message */
     @Override
-    public PatientDTO savePatient(PatientDTO dto) {
+    public String savePatient(PatientDTO dto) {
         Patient patient = toEntity(dto);
-        return toDTO(patientRepository.save(patient));
+        patientRepository.save(patient);
+        LOGGER.info("Patient details saved successfully for: {}", dto.getEmail());
+        return "Patient details saved successfully!";
     }
- 
+
+    /** Updates patient details and logs success message */
     @Override
-    public PatientDTO updatePatient(Long id, PatientDTO dto) {
+    public String updatePatient(Long id, PatientDTO dto) {
         Patient existing = patientRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + id));
- 
+
         existing.setPatientName(dto.getPatientName());
         existing.setDateOfBirth(dto.getDateOfBirth());
         existing.setAge(dto.getAge());
@@ -38,32 +44,41 @@ public class PatientServiceImpl implements PatientService {
         existing.setEmail(dto.getEmail());
         existing.setAddress(dto.getAddress());
         existing.setMedicalHistory(dto.getMedicalHistory());
- 
-        return toDTO(patientRepository.save(existing));
+
+        patientRepository.save(existing);
+        LOGGER.info("Patient details updated successfully for ID: {}", id);
+        return "Patient details updated successfully!";
     }
- 
+
+    /** Retrieves all patients */
     @Override
     public List<PatientDTO> getAllPatients() {
+        LOGGER.info("Fetching all patients.");
         return patientRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
- 
+
+    /** Retrieves patient details */
     @Override
     public PatientDTO getPatientById(Long id) {
+        LOGGER.info("Fetching patient details for ID: {}", id);
         Patient patient = patientRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + id));
         return toDTO(patient);
     }
- 
+
+    /** Deletes patient details */
     @Override
-    public void deletePatient(Long id) {
+    public String deletePatient(Long id) {
         if (!patientRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Patient not found with id: " + id);
+            throw new ResourceNotFoundException("Oops! We couldn't find a patient with ID: " + id + ". Please check and try again.");
         }
+
         patientRepository.deleteById(id);
+        LOGGER.info("Patient details deleted successfully for ID: {}", id);
+        return "Patient details deleted successfully!";
     }
-    
- 
- 
+
+    /** Converts Patient entity to DTO */
     private PatientDTO toDTO(Patient patient) {
         return PatientDTO.builder()
                 .patientId(patient.getPatientId())
@@ -79,7 +94,8 @@ public class PatientServiceImpl implements PatientService {
                 .medicalHistory(patient.getMedicalHistory())
                 .build();
     }
- 
+
+    /** Converts DTO to Patient entity */
     private Patient toEntity(PatientDTO dto) {
         return Patient.builder()
                 .patientId(dto.getPatientId())
@@ -95,5 +111,4 @@ public class PatientServiceImpl implements PatientService {
                 .medicalHistory(dto.getMedicalHistory())
                 .build();
     }
-
 }

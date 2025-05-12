@@ -1,24 +1,16 @@
 package com.cts.project.repository;
 
-import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.cts.project.model.Doctor;
+import org.springframework.stereotype.Repository;
 
+import com.cts.project.model.Doctor;
+@Repository
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
-    Logger LOGGER = LoggerFactory.getLogger(DoctorRepository.class);
+	    /** ✅ Return a list of doctors for the given specialization */
+	    List<Doctor> findBySpecialization(String specialization);
+	}
 
-    /** Retrieves a doctor based on their specialization. */
-    default Optional<Doctor> findBySpecialization(String specialization) {
-        LOGGER.info("Fetching doctor details for specialization: {}", specialization);
-        Optional<Doctor> doctor = findBySpecialization(specialization);
 
-        if (doctor.isEmpty()) {
-            LOGGER.error("No doctor found with specialization: {}", specialization);
-        }
 
-        return doctor;
-    }
-}
