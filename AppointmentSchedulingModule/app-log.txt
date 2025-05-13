@@ -297,3 +297,4 @@
 2025-05-13T10:01:20.779+05:30  INFO 22196 --- [AppointmentSchedulingModule] [http-nio-8082-exec-2] c.c.p.service.AppointmentServiceImpl     : Fetching appointment details for Appointment ID: 12
 2025-05-13T10:01:55.891+05:30  INFO 22196 --- [AppointmentSchedulingModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
 2025-05-13T10:06:55.906+05:30  INFO 22196 --- [AppointmentSchedulingModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-05-13T10:11:55.908+05:30  INFO 22196 --- [AppointmentSchedulingModule] [AsyncResolver-bootstrap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
