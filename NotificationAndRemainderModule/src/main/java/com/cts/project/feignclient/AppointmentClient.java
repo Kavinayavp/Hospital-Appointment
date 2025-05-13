@@ -7,6 +7,6 @@ import com.cts.project.dto.AppointmentResponseDTO;
 
 @FeignClient(name = "APPOINTMENTSCHEDULINGMODULE", url = "http://localhost:8082/appointments")
 public interface AppointmentClient {
-    @GetMapping("/getappointmentbyid/{appointmentId}")
-    AppointmentResponseDTO getAppointmentById(@PathVariable Long appointmentId);
+	@GetMapping("/getappointmentbyid/{appointmentId}")
+	AppointmentResponseDTO getAppointmentById(@PathVariable Long appointmentId);
 }

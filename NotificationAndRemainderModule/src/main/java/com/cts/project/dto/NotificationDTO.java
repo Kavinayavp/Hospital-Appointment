@@ -1,6 +1,5 @@
 package com.cts.project.dto;
 
-
 import jakarta.validation.constraints.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -11,13 +10,13 @@ import java.time.LocalDateTime;
 @Builder
 public class NotificationDTO {
 
-   private Long notificationId;
+	private Long notificationId;
 
-   @NotNull(message = "Patient ID is required")
-   private Long patientId;
+	@NotNull(message = "Patient ID is required")
+	private Long patientId;
 
-   @NotBlank(message = "Message is required")
-   private String message;
+	@NotBlank(message = "Message is required")
+	private String message;
 
-   private LocalDateTime timestamp;
+	private LocalDateTime timestamp;
 }

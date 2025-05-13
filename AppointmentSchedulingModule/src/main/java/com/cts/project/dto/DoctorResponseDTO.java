@@ -8,8 +8,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DoctorResponseDTO {
-    private Long doctorId;
-    private String doctorName;
-    private List<String> availableDays;
-    private String availableTime;
+	private Long doctorId;
+	private String doctorName;
+	private List<String> availableDays;
+	private String availableTime;
 }

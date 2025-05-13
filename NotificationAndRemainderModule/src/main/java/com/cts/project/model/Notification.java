@@ -13,17 +13,17 @@ import java.time.LocalDateTime;
 @Table(name = "NotificationDetails")
 public class Notification {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long notificationId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long notificationId;
 
-    @NotNull(message = "Patient ID is required")
-    private Long patientId;
+	@NotNull(message = "Patient ID is required")
+	private Long patientId;
 
-    @NotBlank(message = "Message content cannot be empty")
-    @Size(max = 500, message = "Message should not exceed 500 characters")
-    private String message;
+	@NotBlank(message = "Message content cannot be empty")
+	@Size(max = 500, message = "Message should not exceed 500 characters")
+	private String message;
 
-    @PastOrPresent(message = "Timestamp must be in the past or present")
-    private LocalDateTime timestamp;
+	@PastOrPresent(message = "Timestamp must be in the past or present")
+	private LocalDateTime timestamp;
 }

@@ -15,19 +15,19 @@ import java.util.List;
 @AllArgsConstructor
 public class NotificationController {
 
-    private final NotificationService service;
-    private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
+	private final NotificationService service;
+	private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
 
-    @PostMapping("/send")
-    public NotificationDTO send(@Valid @RequestBody NotificationDTO dto) {
-        logger.info("Sending notification: {}", dto);
-        return service.sendNotification(dto);
-    }
+	@PostMapping("/send")
+	public NotificationDTO send(@Valid @RequestBody NotificationDTO dto) {
+		logger.info("Sending notification: {}", dto);
+		return service.sendNotification(dto);
+	}
 
-    @GetMapping("/appointments/{appointmentId}/notify")
-    public String notifyAppointment(@PathVariable Long appointmentId) {
-        logger.info("Sending appointment notification for Appointment ID: {}", appointmentId);
-        return service.notifyAppointmentStatus(appointmentId);
-    }
+	@GetMapping("/appointments/{appointmentId}/notify")
+	public String notifyAppointment(@PathVariable Long appointmentId) {
+		logger.info("Sending appointment notification for Appointment ID: {}", appointmentId);
+		return service.notifyAppointmentStatus(appointmentId);
+	}
 
 }

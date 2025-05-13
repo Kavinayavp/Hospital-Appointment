@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(value = HttpStatus.FORBIDDEN)
 public class UnauthorizedAccessException extends RuntimeException {
 
-    /** Constructor that accepts a custom error message */
-    public UnauthorizedAccessException(String message) {
-        super(message);
-    }
+	/** Constructor that accepts a custom error message */
+	public UnauthorizedAccessException(String message) {
+		super(message);
+	}
 }

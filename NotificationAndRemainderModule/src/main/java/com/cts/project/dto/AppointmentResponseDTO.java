@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppointmentResponseDTO {
-    private Long appointmentId;
-    private Long patientId;
-    private Long doctorId;
-    private String appointmentDate;
-    private String appointmentTime;
-    private String status;
+	private Long appointmentId;
+	private Long patientId;
+	private Long doctorId;
+	private String appointmentDate;
+	private String appointmentTime;
+	private String status;
 }

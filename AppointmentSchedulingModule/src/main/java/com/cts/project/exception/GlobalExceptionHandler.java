@@ -1,68 +1,51 @@
 package com.cts.project.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.*;
+import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import jakarta.validation.ConstraintViolationException;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
-
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(GlobalExceptionHandler.class.getName());
+	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    //  Handle Validation Errors (Bad Request - 400)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public Map<String, String> handleValidationErrors(MethodArgumentNotValidException ex) {
+		Map<String, String> errors = new HashMap<>();
 
-        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            errors.put(error.getField(), error.getDefaultMessage());
+		ex.getBindingResult().getFieldErrors().forEach(error -> {
+			errors.put(error.getField(), error.getDefaultMessage());
+			LOGGER.error("Validation Error - Field: {} | Message: {}", error.getField(), error.getDefaultMessage()); // ✅
+																														// LOGGING
+																														// HERE
+		});
 
-            // ✅ Log validation errors in console
-            LOGGER.warning("Validation Error - Field: " + error.getField() + " | Message: " + error.getDefaultMessage());
-        }
+		return errors;
+	}
 
-        return ResponseEntity.badRequest().body(errors);
-    }
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(ConstraintViolationException.class)
+	public Map<String, String> handleConstraintViolations(ConstraintViolationException ex) {
+	    String errorMessage = ex.getConstraintViolations().stream()
+	        .map(violation -> violation.getMessage())
+	        .findFirst()
+	        .orElse("Invalid request data."); // Picks only first error for simplicity
 
-    //  Handle Not Found Errors (404)
-    @ExceptionHandler(AppointmentNotFoundException.class)
-    public ResponseEntity<String> handleNotFoundException(AppointmentNotFoundException ex) {
-        LOGGER.warning("Error: " + ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
+	    LOGGER.error(" Validation Error: {}", errorMessage); // Logs a simple, user-friendly error
+	    return Map.of("error", errorMessage);
+	}
 
-    //  Handle Unauthorized Access Errors (403)
+	
+	/** Handles unauthorized access errors */
+    @ResponseStatus(HttpStatus.UNAUTHORIZED) // 
     @ExceptionHandler(UnauthorizedAccessException.class)
-    public ResponseEntity<String> handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
-        LOGGER.warning("Unauthorized Access Attempt: " + ex.getMessage());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    public Map<String, String> handleUnauthorizedAccess(UnauthorizedAccessException ex) {
+        LOGGER.error(" Unauthorized Access: {}", ex.getMessage());
+        return Map.of("error", ex.getMessage());
     }
-
-    //  Handle Generic Exceptions (500)
-	/*
-	 * @ExceptionHandler(Exception.class) public ResponseEntity<String>
-	 * handleGenericException(Exception ex) { LOGGER.severe("Unexpected Error: " +
-	 * ex.getMessage()); return
-	 * ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).
-	 * body("An unexpected error occurred. Please try again."); }
-	 */
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
-        Map<String, String> errorDetails = new HashMap<>();
-        errorDetails.put("error", "Unexpected Error");
-        errorDetails.put("message", ex.getMessage());
-        errorDetails.put("cause", ex.getCause() != null ? ex.getCause().toString() : "No specific cause");
-
-        LOGGER.severe("Unexpected Error: " + ex.getMessage());
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDetails);
-    }
-
 }

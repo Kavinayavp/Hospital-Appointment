@@ -8,6 +8,6 @@ import com.cts.project.dto.PatientResponseDTO;
 
 @FeignClient(name = "PATIENTREGISTRATIONANDPROFILEMANAGEMENTMODULE", url = "http://localhost:8081/patients")
 public interface PatientClient {
-    @GetMapping("/getPatientById/{patientId}")
-    PatientResponseDTO getPatientById(@PathVariable Long patientId);
+	@GetMapping("/getPatientById/{patientId}")
+	PatientResponseDTO getPatientById(@PathVariable Long patientId);
 }

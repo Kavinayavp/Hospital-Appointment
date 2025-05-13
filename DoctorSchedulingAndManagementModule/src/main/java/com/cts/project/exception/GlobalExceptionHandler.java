@@ -1,23 +1,45 @@
 package com.cts.project.exception;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.*;
+import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import jakarta.validation.ConstraintViolationException;
 
-import java.util.HashMap;
-import java.util.Map;
-
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            errors.put(error.getField(), error.getDefaultMessage()); // ✅ Returns only the validation message
-        }
-        return ResponseEntity.badRequest().body(errors); // ✅ Sends error response with HTTP 400
-    }
+	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public Map<String, String> handleValidationErrors(MethodArgumentNotValidException ex) {
+		Map<String, String> errors = new HashMap<>();
+
+		ex.getBindingResult().getFieldErrors().forEach(error -> {
+			errors.put(error.getField(), error.getDefaultMessage());
+			LOGGER.error("Validation Error - Field: {} | Message: {}", error.getField(), error.getDefaultMessage()); // ✅
+																														// LOGGING
+																														// HERE
+		});
+
+		return errors;
+	}
+
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(ConstraintViolationException.class)
+	public Map<String, String> handleConstraintViolations(ConstraintViolationException ex) {
+		Map<String, String> errors = new HashMap<>();
+
+		ex.getConstraintViolations().forEach(violation -> {
+			String field = violation.getPropertyPath().toString();
+			String message = violation.getMessage();
+			errors.put(field, message);
+			LOGGER.error("Validation Error - Field: {} | Message: {}", field, message); // ✅ LOGGING HERE
+		});
+
+		return errors;
+	}
 }

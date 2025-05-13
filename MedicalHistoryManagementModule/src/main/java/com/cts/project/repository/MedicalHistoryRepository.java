@@ -8,10 +8,9 @@ import java.util.Optional;
 
 @Repository
 public interface MedicalHistoryRepository extends JpaRepository<MedicalHistory, Long> {
-	
+
 	List<MedicalHistory> findByHistoryId(Long historyId);
 
 	List<MedicalHistory> findByPatientId(Long patientId);
-   
-}
 
+}

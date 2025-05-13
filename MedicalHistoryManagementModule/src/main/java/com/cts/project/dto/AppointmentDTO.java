@@ -7,12 +7,12 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class AppointmentDTO {
-    private Long appointmentId;
-    private Long doctorId;
-    private String doctorName;
-    private Long patientId;
-    private String patientName;
-    private String appointmentDate;
-    private String appointmentTime;
-    private String status;
+	private Long appointmentId;
+	private Long doctorId;
+	private String doctorName;
+	private Long patientId;
+	private String patientName;
+	private String appointmentDate;
+	private String appointmentTime;
+	private String status;
 }

@@ -8,12 +8,11 @@ import com.cts.project.dto.DoctorResponseDTO;
 
 @FeignClient(name = "DOCTORSCHEDULINGANDMANAGEMENTMODULE", url = "http://localhost:8083/doctors")
 public interface DoctorClient {
- 
+
 	@GetMapping("/getdoctorbyid/{id}")
 	public DoctorResponseDTO getDoctorById(@PathVariable Long id);
 
 	@GetMapping("/availability/{specialization}")
 	public DoctorResponseDTO getAvailability(@PathVariable String specialization);
-	
+
 }
- 

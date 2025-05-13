@@ -14,42 +14,42 @@ import lombok.*;
 @Table(name = "PatientDetails")
 public class Patient {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long patientId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long patientId;
 
-    @NotBlank(message = "Patient name is required")
-    @Size(max = 50, message = "Patient name should not exceed 50 characters")
-    private String patientName;
-     
-    @Past(message = "Date of Birth must be in the past")
-    @NotNull(message = "Date of birth is required")
-    private LocalDate dateOfBirth;
+	@NotBlank(message = "Patient name is required")
+	@Size(max = 50, message = "Patient name should not exceed 50 characters")
+	private String patientName;
 
-    @Min(value = 0, message = "Age cannot be negative")
-    @Max(value = 100, message = "Age cannot exceed 100 years")
-    private int age;
+	@Past(message = "Date of Birth must be in the past")
+	@NotNull(message = "Date of birth is required")
+	private LocalDate dateOfBirth;
 
-    @NotBlank(message = "Gender is required")
-    @Pattern(regexp = "Male|Female|Other", message = "Gender must be Male, Female, or Other")
-    private String gender;
+	@Min(value = 0, message = "Age cannot be negative")
+	@Max(value = 100, message = "Age cannot exceed 100 years")
+	private int age;
 
-    @NotBlank(message = "Blood group is required")
-    @Pattern(regexp = "^(A|B|AB|O)[+-]$", message = "Invalid blood group format")
-    private String bloodGroup;
+	@NotBlank(message = "Gender is required")
+	@Pattern(regexp = "Male|Female|Other", message = "Gender must be Male, Female, or Other")
+	private String gender;
 
-    @Size(max = 50, message = "Guardian name should not exceed 50 characters")
-    private String guardianName;
+	@NotBlank(message = "Blood group is required")
+	@Pattern(regexp = "^(A|B|AB|O)[+-]$", message = "Invalid blood group format")
+	private String bloodGroup;
 
-    @Pattern(regexp = "^\\d{10}$", message = "Contact number must be a 10-digit number")
-    private String contactNumber;
+	@Size(max = 50, message = "Guardian name should not exceed 50 characters")
+	private String guardianName;
 
-    @Email(message = "Invalid email format")
-    private String email;
+	@Pattern(regexp = "^\\d{10}$", message = "Contact number must be a 10-digit number")
+	private String contactNumber;
 
-    @Size(max = 255, message = "Address should not exceed 255 characters")
-    private String address;
+	@Email(message = "Invalid email format")
+	private String email;
 
-    @Size(max = 500, message = "Medical history should not exceed 500 characters")
-    private String medicalHistory;
+	@Size(max = 255, message = "Address should not exceed 255 characters")
+	private String address;
+
+	@Size(max = 500, message = "Medical history should not exceed 500 characters")
+	private String medicalHistory;
 }

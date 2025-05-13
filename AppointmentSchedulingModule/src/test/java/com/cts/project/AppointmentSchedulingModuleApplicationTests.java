@@ -21,154 +21,155 @@ import static org.mockito.Mockito.*;
 
 class AppointmentServiceImplTest {
 
-    @InjectMocks
-    private AppointmentServiceImpl appointmentService;
+	@InjectMocks
+	private AppointmentServiceImpl appointmentService;
 
-    @Mock
-    private AppointmentRepository appointmentRepository;
+	@Mock
+	private AppointmentRepository appointmentRepository;
 
-    @Mock
-    private PatientClient patientClient;
+	@Mock
+	private PatientClient patientClient;
 
-    @Mock
-    private DoctorClient doctorClient;
+	@Mock
+	private DoctorClient doctorClient;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+	@BeforeEach
+	void setUp() {
+		MockitoAnnotations.openMocks(this);
+	}
 
-    private Appointment getSampleAppointment() {
-        Appointment appointment = new Appointment();
-        appointment.setAppointmentId(1L);
-        appointment.setDoctorId(2L);
-        appointment.setDoctorName("Dr. Smith"); // ✅ Added doctor name
-        appointment.setPatientId(4L);
-        appointment.setPatientName("John Doe"); // ✅ Added patient name
-        appointment.setAppointmentDate("2025-05-23");
-        appointment.setAppointmentTime("10:00 AM");
-        appointment.setStatus("BOOKED");
-        return appointment;
-    }
+	private Appointment getSampleAppointment() {
+		Appointment appointment = new Appointment();
+		appointment.setAppointmentId(1L);
+		appointment.setDoctorId(2L);
+		appointment.setDoctorName("Dr. Smith"); // ✅ Added doctor name
+		appointment.setPatientId(4L);
+		appointment.setPatientName("John Doe"); // ✅ Added patient name
+		appointment.setAppointmentDate("2025-05-23");
+		appointment.setAppointmentTime("10:00 AM");
+		appointment.setStatus("BOOKED");
+		return appointment;
+	}
 
-    private AppointmentDTO getSampleDTO() {
-        AppointmentDTO dto = new AppointmentDTO();
-        dto.setDoctorId(2L);
-        dto.setDoctorName("Dr. Smith"); // ✅ Added doctor name
-        dto.setPatientId(3L);
-        dto.setPatientName("John Doe"); // ✅ Added patient name
-        dto.setAppointmentDate("2025-05-23");
-        dto.setAppointmentTime("10:00 AM");
-        return dto;
-    }
+	private AppointmentDTO getSampleDTO() {
+		AppointmentDTO dto = new AppointmentDTO();
+		dto.setDoctorId(2L);
+		dto.setDoctorName("Dr. Smith"); // ✅ Added doctor name
+		dto.setPatientId(3L);
+		dto.setPatientName("John Doe"); // ✅ Added patient name
+		dto.setAppointmentDate("2025-05-23");
+		dto.setAppointmentTime("10:00 AM");
+		return dto;
+	}
 
-    private DoctorResponseDTO getSampleDoctorResponse() {
-        DoctorResponseDTO response = new DoctorResponseDTO();
-        response.setDoctorId(2L);
-        response.setDoctorName("Dr. Smith");
-        response.setAvailableDays(Arrays.asList("MONDAY", "WEDNESDAY", "FRIDAY"));
-        return response;
-    }
+	private DoctorResponseDTO getSampleDoctorResponse() {
+		DoctorResponseDTO response = new DoctorResponseDTO();
+		response.setDoctorId(2L);
+		response.setDoctorName("Dr. Smith");
+		response.setAvailableDays(Arrays.asList("MONDAY", "WEDNESDAY", "FRIDAY"));
+		return response;
+	}
 
-    private PatientResponseDTO getSamplePatientResponse() {
-        PatientResponseDTO response = new PatientResponseDTO();
-        response.setPatientId(3L);
-        response.setPatientName("John Doe");
-        return response;
-    }
+	private PatientResponseDTO getSamplePatientResponse() {
+		PatientResponseDTO response = new PatientResponseDTO();
+		response.setPatientId(3L);
+		response.setPatientName("John Doe");
+		return response;
+	}
 
-    @Test
-    void testBookAppointment_Success() {
-        AppointmentDTO dto = getSampleDTO();
-        Appointment saved = getSampleAppointment();
+	@Test
+	void testBookAppointment_Success() {
+		AppointmentDTO dto = getSampleDTO();
+		Appointment saved = getSampleAppointment();
 
-        when(doctorClient.getDoctorById(2L)).thenReturn(getSampleDoctorResponse());
-        when(patientClient.getPatientById(3L)).thenReturn(getSamplePatientResponse());
-        when(appointmentRepository.save(any(Appointment.class))).thenReturn(saved);
+		when(doctorClient.getDoctorById(2L)).thenReturn(getSampleDoctorResponse());
+		when(patientClient.getPatientById(3L)).thenReturn(getSamplePatientResponse());
+		when(appointmentRepository.save(any(Appointment.class))).thenReturn(saved);
 
-        String result = appointmentService.bookAppointment(dto);
+		String result = appointmentService.bookAppointment(dto);
 
-        assertNotNull(result);
-        assertEquals("Appointment booked successfully!", result);
-        verify(appointmentRepository, times(1)).save(any(Appointment.class));
-    }
+		assertNotNull(result);
+		assertEquals("Appointment booked successfully!", result);
+		verify(appointmentRepository, times(1)).save(any(Appointment.class));
+	}
 
-    @Test
-    void testBookAppointment_DoctorNotFound() {
-        AppointmentDTO dto = getSampleDTO();
-        when(doctorClient.getDoctorById(2L)).thenReturn(null);
+	@Test
+	void testBookAppointment_DoctorNotFound() {
+		AppointmentDTO dto = getSampleDTO();
+		when(doctorClient.getDoctorById(2L)).thenReturn(null);
 
-        assertEquals("Doctor not found with ID: 2", appointmentService.bookAppointment(dto));
-    }
+		assertEquals("Doctor not found with ID: 2", appointmentService.bookAppointment(dto));
+	}
 
-    @Test
-    void testBookAppointment_PatientNotFound() {
-        AppointmentDTO dto = getSampleDTO();
-        when(patientClient.getPatientById(3L)).thenReturn(null);
+	@Test
+	void testBookAppointment_PatientNotFound() {
+		AppointmentDTO dto = getSampleDTO();
+		when(patientClient.getPatientById(3L)).thenReturn(null);
 
-        assertEquals("Doctor or Patient not found.", appointmentService.bookAppointment(dto));
-    }
+		assertEquals("Doctor or Patient not found.", appointmentService.bookAppointment(dto));
+	}
 
-    @Test
-    void testGetAppointmentById_Success() {
-        Appointment appointment = getSampleAppointment();
-        when(appointmentRepository.findById(1L)).thenReturn(Optional.of(appointment));
+	@Test
+	void testGetAppointmentById_Success() {
+		Appointment appointment = getSampleAppointment();
+		when(appointmentRepository.findById(1L)).thenReturn(Optional.of(appointment));
 
-        AppointmentDTO result = appointmentService.getAppointmentById(1L);
+		AppointmentDTO result = appointmentService.getAppointmentById(1L);
 
-        assertNotNull(result);
-        assertEquals(1L, result.getAppointmentId());
-        assertEquals("Dr. Smith", result.getDoctorName()); // ✅ Validate doctor name
-        assertEquals("John Doe", result.getPatientName()); // ✅ Validate patient name
-    }
+		assertNotNull(result);
+		assertEquals(1L, result.getAppointmentId());
+		assertEquals("Dr. Smith", result.getDoctorName()); // ✅ Validate doctor name
+		assertEquals("John Doe", result.getPatientName()); // ✅ Validate patient name
+	}
 
-    @Test
-    void testGetAppointmentById_NotFound() {
-        when(appointmentRepository.findById(1L)).thenReturn(Optional.empty());
+	@Test
+	void testGetAppointmentById_NotFound() {
+		when(appointmentRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(AppointmentNotFoundException.class, () -> appointmentService.getAppointmentById(1L));
-    }
+		assertThrows(AppointmentNotFoundException.class, () -> appointmentService.getAppointmentById(1L));
+	}
 
-    @Test
-    void testGetAppointmentsByPatientId() {
-        List<Appointment> list = Arrays.asList(getSampleAppointment());
-        when(appointmentRepository.findByPatientId(3L)).thenReturn(list);
+	@Test
+	void testGetAppointmentsByPatientId() {
+		List<Appointment> list = Arrays.asList(getSampleAppointment());
+		when(appointmentRepository.findByPatientId(3L)).thenReturn(list);
 
-        List<AppointmentDTO> results = appointmentService.getAppointmentsByPatientId(3L);
+		List<AppointmentDTO> results = appointmentService.getAppointmentsByPatientId(3L);
 
-        assertEquals(1, results.size());
-        assertEquals("BOOKED", results.get(0).getStatus());
-    }
+		assertEquals(1, results.size());
+		assertEquals("BOOKED", results.get(0).getStatus());
+	}
 
-    @Test
-    void testDeleteAppointment_Success() {
-        Appointment appointment = getSampleAppointment();
-        when(appointmentRepository.findById(1L)).thenReturn(Optional.of(appointment));
+	@Test
+	void testDeleteAppointment_Success() {
+		Appointment appointment = getSampleAppointment();
+		when(appointmentRepository.findById(1L)).thenReturn(Optional.of(appointment));
 
-        appointmentService.deleteAppointment(1L, 2L);
+		appointmentService.deleteAppointment(1L, 2L);
 
-        verify(appointmentRepository, times(1)).delete(appointment);
-    }
+		verify(appointmentRepository, times(1)).delete(appointment);
+	}
 
-    @Test
-    void testDeleteAppointment_NotFound() {
-        when(appointmentRepository.findById(1L)).thenReturn(Optional.empty());
+	@Test
+	void testDeleteAppointment_NotFound() {
+		when(appointmentRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(AppointmentNotFoundException.class, () -> appointmentService.deleteAppointment(1L, 2L));
-    }
-    @Test
-    void testUpdateAppointment_Reschedule() {
-        Appointment existing = getSampleAppointment();
-        AppointmentDTO updateDTO = getSampleDTO();
-        updateDTO.setAppointmentDate("2025-05-26");
-        updateDTO.setAppointmentTime("2:00 PM");
+		assertThrows(AppointmentNotFoundException.class, () -> appointmentService.deleteAppointment(1L, 2L));
+	}
 
-        when(appointmentRepository.findById(1L)).thenReturn(Optional.of(existing));
-        when(appointmentRepository.save(any(Appointment.class))).thenReturn(existing);
+	@Test
+	void testUpdateAppointment_Reschedule() {
+		Appointment existing = getSampleAppointment();
+		AppointmentDTO updateDTO = getSampleDTO();
+		updateDTO.setAppointmentDate("2025-05-26");
+		updateDTO.setAppointmentTime("2:00 PM");
 
-        String updatedStatus = appointmentService.updateAppointment(1L, 2L, updateDTO); 
+		when(appointmentRepository.findById(1L)).thenReturn(Optional.of(existing));
+		when(appointmentRepository.save(any(Appointment.class))).thenReturn(existing);
 
-        assertEquals("RESCHEDULED", updatedStatus); 
-    }
+		String updatedStatus = appointmentService.updateAppointment(1L, 2L, updateDTO);
 
-    }
+		assertEquals("RESCHEDULED", updatedStatus);
+	}
+
+}

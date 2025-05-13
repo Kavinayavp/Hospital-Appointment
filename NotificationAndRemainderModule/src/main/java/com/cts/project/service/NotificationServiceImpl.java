@@ -24,82 +24,76 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
- 
-    private final NotificationRepository repository;
-    private final PatientClient patientClient;
-    private final AppointmentClient appointmentClient;
-    private final MedicalHistoryClient medicalHistoryClient;
-    
-    private static final Logger logger = LoggerFactory.getLogger(NotificationServiceImpl.class);
 
-    public String notifyAppointmentStatus(Long appointmentId) {
-        try {
-            AppointmentResponseDTO appointment = appointmentClient.getAppointmentById(appointmentId);
-            String message = switch (appointment.getStatus().toUpperCase()) {
-                case "BOOKED" -> "Your appointment has been successfully booked for " + appointment.getAppointmentDate() + " at " + appointment.getAppointmentTime() + ".";
-                case "RESCHEDULED" -> "Your appointment has been rescheduled to " + appointment.getAppointmentDate() + " at " + appointment.getAppointmentTime() + ".";
-                case "CANCELLED" -> "Your appointment has been cancelled.";
-                default -> "Your appointment status is updated.";
-            };
+	private final NotificationRepository repository;
+	private final PatientClient patientClient;
+	private final AppointmentClient appointmentClient;
+	private final MedicalHistoryClient medicalHistoryClient;
 
-            sendNotificationToPatient(appointment.getPatientId(), message);
-            logger.info("Notification sent for appointment ID: {}", appointmentId);
-            return "Notification sent successfully for Appointment ID: " + appointmentId;
-        } catch (FeignException.NotFound e) {
-            logger.error("Appointment not found with ID: {}", appointmentId);
-            return "Appointment not found with ID: " + appointmentId;
-        } catch (Exception e) {
-            logger.error("Error fetching appointment details: {}", e.getMessage());
-            return "Error fetching appointment details: " + e.getMessage();
-        }
-    }
+	private static final Logger logger = LoggerFactory.getLogger(NotificationServiceImpl.class);
 
-   
+	public String notifyAppointmentStatus(Long appointmentId) {
+		try {
+			AppointmentResponseDTO appointment = appointmentClient.getAppointmentById(appointmentId);
+			String message = switch (appointment.getStatus().toUpperCase()) {
+			case "BOOKED" -> "Your appointment has been successfully booked for " + appointment.getAppointmentDate()
+					+ " at " + appointment.getAppointmentTime() + ".";
+			case "RESCHEDULED" -> "Your appointment has been rescheduled to " + appointment.getAppointmentDate()
+					+ " at " + appointment.getAppointmentTime() + ".";
+			case "CANCELLED" -> "Your appointment has been cancelled.";
+			default -> "Your appointment status is updated.";
+			};
 
-    public String sendNotificationToPatient(Long patientId, String message) {
-        try {
-            PatientResponseDTO patient = patientClient.getPatientById(patientId);
-            Notification notification = new Notification();
-            notification.setPatientId(patientId);
-            notification.setMessage("Hi " + patient.getPatientName() + ", " + message);
-            notification.setTimestamp(LocalDateTime.now());
+			sendNotificationToPatient(appointment.getPatientId(), message);
+			logger.info("Notification sent for appointment ID: {}", appointmentId);
+			return "Notification sent successfully for Appointment ID: " + appointmentId;
+		} catch (FeignException.NotFound e) {
+			logger.error("Appointment not found with ID: {}", appointmentId);
+			return "Appointment not found with ID: " + appointmentId;
+		} catch (Exception e) {
+			logger.error("Error fetching appointment details: {}", e.getMessage());
+			return "Error fetching appointment details: " + e.getMessage();
+		}
+	}
 
-            Notification savedNotification = repository.save(notification); // ✅ Store notification
-            logger.info(" Notification stored in DB: {}", savedNotification); // ✅ Log saved notification
-            return "Notification sent successfully to Patient ID: " + patientId;
-        } catch (FeignException.NotFound e) {
-            logger.error(" Patient not found with ID: {}", patientId);
-            return "Patient not found with ID: " + patientId;
-        } catch (Exception e) {
-            logger.error(" Error while sending notification: {}", e.getMessage());
-            return "Error while sending notification: " + e.getMessage();
-        }
-    }
+	public String sendNotificationToPatient(Long patientId, String message) {
+		try {
+			PatientResponseDTO patient = patientClient.getPatientById(patientId);
+			Notification notification = new Notification();
+			notification.setPatientId(patientId);
+			notification.setMessage("Hi " + patient.getPatientName() + ", " + message);
+			notification.setTimestamp(LocalDateTime.now());
 
-    /**  Send Notification Manually **/
-    @Override
-    public NotificationDTO sendNotification(NotificationDTO dto) {
-        Notification notification = mapToEntity(dto);
-        Notification savedNotification = repository.save(notification);
-        return mapToDTO(savedNotification);
-    }
+			Notification savedNotification = repository.save(notification); // ✅ Store notification
+			logger.info(" Notification stored in DB: {}", savedNotification); // ✅ Log saved notification
+			return "Notification sent successfully to Patient ID: " + patientId;
+		} catch (FeignException.NotFound e) {
+			logger.error(" Patient not found with ID: {}", patientId);
+			return "Patient not found with ID: " + patientId;
+		} catch (Exception e) {
+			logger.error(" Error while sending notification: {}", e.getMessage());
+			return "Error while sending notification: " + e.getMessage();
+		}
+	}
 
-    /**  Helper Methods for DTO Mapping **/
-    private NotificationDTO mapToDTO(Notification notification) {
-        return NotificationDTO.builder()
-                .notificationId(notification.getNotificationId())
-                .patientId(notification.getPatientId())
-                .message(notification.getMessage())
-                .timestamp(notification.getTimestamp())
-                .build();
-    }
- 
-    private Notification mapToEntity(NotificationDTO dto) {
-        return Notification.builder()
-                .notificationId(dto.getNotificationId())
-                .patientId(dto.getPatientId())
-                .message(dto.getMessage())
-                .timestamp(dto.getTimestamp() != null ? dto.getTimestamp() : LocalDateTime.now())
-                .build();
-    }
+	/** Send Notification Manually **/
+	@Override
+	public NotificationDTO sendNotification(NotificationDTO dto) {
+		Notification notification = mapToEntity(dto);
+		Notification savedNotification = repository.save(notification);
+		return mapToDTO(savedNotification);
+	}
+
+	/** Helper Methods for DTO Mapping **/
+	private NotificationDTO mapToDTO(Notification notification) {
+		return NotificationDTO.builder().notificationId(notification.getNotificationId())
+				.patientId(notification.getPatientId()).message(notification.getMessage())
+				.timestamp(notification.getTimestamp()).build();
+	}
+
+	private Notification mapToEntity(NotificationDTO dto) {
+		return Notification.builder().notificationId(dto.getNotificationId()).patientId(dto.getPatientId())
+				.message(dto.getMessage())
+				.timestamp(dto.getTimestamp() != null ? dto.getTimestamp() : LocalDateTime.now()).build();
+	}
 }

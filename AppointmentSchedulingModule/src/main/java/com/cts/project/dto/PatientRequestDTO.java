@@ -6,5 +6,5 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PatientRequestDTO {
-    private Long patientId;
+	private Long patientId;
 }
