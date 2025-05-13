@@ -25,11 +25,11 @@ public class MedicalHistoryController {
         return "Medical history saved successfully.";
     }
 
-    /** ✅ Update medical history just using patientId */
-    @PutMapping("/update/{patientId}")
-    public String update(@PathVariable Long patientId, @Valid @RequestBody MedicalHistoryDTO dto) {
-        medicalHistoryService.updateMedicalHistory(patientId, dto);
-        return "Medical history updated successfully.";
+    /** ✅ Update medical history just using historyId */
+    @PutMapping("/update/{historyId}")
+    public String update(@PathVariable Long historyId, @Valid @RequestBody MedicalHistoryDTO dto) {
+        medicalHistoryService.updateMedicalHistory(historyId, dto);
+        return "Medical history updated successfully for history Id "+historyId;
     }
 
     /** ✅ Get all medical histories */

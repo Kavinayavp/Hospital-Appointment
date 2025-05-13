@@ -24,12 +24,6 @@ public class NotificationController {
         return service.sendNotification(dto);
     }
 
-    @GetMapping("/getnotificationbypatientid/{patientId}")
-    public List<NotificationDTO> getByPatient(@PathVariable Long patientId) {
-        logger.info("Fetching notifications for Patient ID: {}", patientId);
-        return service.getNotificationsByPatientId(patientId);
-    }
-
     @GetMapping("/appointments/{appointmentId}/notify")
     public String notifyAppointment(@PathVariable Long appointmentId) {
         logger.info("Sending appointment notification for Appointment ID: {}", appointmentId);

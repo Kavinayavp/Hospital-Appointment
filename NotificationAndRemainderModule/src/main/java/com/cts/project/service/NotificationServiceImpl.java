@@ -65,18 +65,18 @@ public class NotificationServiceImpl implements NotificationService {
             notification.setTimestamp(LocalDateTime.now());
 
             Notification savedNotification = repository.save(notification); // ✅ Store notification
-            logger.info("✅ Notification stored in DB: {}", savedNotification); // ✅ Log saved notification
+            logger.info(" Notification stored in DB: {}", savedNotification); // ✅ Log saved notification
             return "Notification sent successfully to Patient ID: " + patientId;
         } catch (FeignException.NotFound e) {
-            logger.error("❌ Patient not found with ID: {}", patientId);
+            logger.error(" Patient not found with ID: {}", patientId);
             return "Patient not found with ID: " + patientId;
         } catch (Exception e) {
-            logger.error("❌ Error while sending notification: {}", e.getMessage());
+            logger.error(" Error while sending notification: {}", e.getMessage());
             return "Error while sending notification: " + e.getMessage();
         }
     }
 
-    /** ✅ Send Notification Manually **/
+    /**  Send Notification Manually **/
     @Override
     public NotificationDTO sendNotification(NotificationDTO dto) {
         Notification notification = mapToEntity(dto);
@@ -84,17 +84,7 @@ public class NotificationServiceImpl implements NotificationService {
         return mapToDTO(savedNotification);
     }
 
-    /** ✅ Get Notifications by Patient ID **/
-    @Override
-    public List<NotificationDTO> getNotificationsByPatientId(Long patientId) {
-        List<Notification> notifications = repository.findByPatientId(patientId);
-        if (notifications.isEmpty()) {
-            throw new NotificationNotFoundException("No notifications found for Patient ID: " + patientId);
-        }
-        return notifications.stream().map(this::mapToDTO).collect(Collectors.toList());
-    }
-
-    /** ✅ Helper Methods for DTO Mapping **/
+    /**  Helper Methods for DTO Mapping **/
     private NotificationDTO mapToDTO(Notification notification) {
         return NotificationDTO.builder()
                 .notificationId(notification.getNotificationId())
