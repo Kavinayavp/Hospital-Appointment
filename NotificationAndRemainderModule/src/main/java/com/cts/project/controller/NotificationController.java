@@ -8,8 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/notifications")
 @AllArgsConstructor
@@ -24,10 +22,18 @@ public class NotificationController {
 		return service.sendNotification(dto);
 	}
 
-	@GetMapping("/appointments/{appointmentId}/notify")
-	public String notifyAppointment(@PathVariable Long appointmentId) {
-		logger.info("Sending appointment notification for Appointment ID: {}", appointmentId);
-		return service.notifyAppointmentStatus(appointmentId);
+	@GetMapping("/appointments/{appointmentId}/notifyPatient")
+	public String notifyPatient(@PathVariable Long appointmentId) {
+		logger.info("Sending patient notification for Appointment ID: {}", appointmentId);
+	    return service.notifyPatientAboutAppointment(appointmentId);
 	}
+
+
+	@GetMapping("/appointments/{appointmentId}/notifyDoctor")
+	public String notifyDoctor(@PathVariable Long appointmentId) {
+		logger.info("Sending doctor notification for Appointment ID: {}", appointmentId);
+	    return service.notifyDoctorAboutAppointment(appointmentId);
+	}
+
 
 }

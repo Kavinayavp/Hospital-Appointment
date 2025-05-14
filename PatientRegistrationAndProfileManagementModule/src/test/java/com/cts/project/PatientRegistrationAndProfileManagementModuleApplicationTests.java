@@ -107,7 +107,7 @@ class PatientControllerTest {
 
 	@Test
 	void testDeletePatient() throws Exception {
-		when(patientService.deletePatient(1L)).thenReturn("Patient with ID 1 deleted successfully.");
+		when(patientService.deletePatient(1L, null)).thenReturn("Patient with ID 1 deleted successfully.");
 
 		mockMvc.perform(MockMvcRequestBuilders.delete("/patients/deletepatient/1"))
 				.andExpect(MockMvcResultMatchers.status().isOk())

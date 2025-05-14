@@ -77,4 +77,10 @@ public class AppointmentController {
 			throw new AppointmentNotFoundException("Patient not found");
 		}
 	}
+	
+	@GetMapping("/appointments/{appointmentId}/notify")
+	public String notifyAppointment(@PathVariable Long appointmentId) {
+	    return appointmentService.notifyDoctorAboutAppointment(appointmentId);
+	}
+
 }

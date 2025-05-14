@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import com.cts.project.dto.DoctorDTO;
 import com.cts.project.exception.DoctorNotFoundException;
+import com.cts.project.exception.UnauthorizedAccessException;
+import com.cts.project.feignclient.NotificationClient;
 import com.cts.project.model.Doctor;
 import com.cts.project.repository.DoctorRepository;
 
@@ -20,6 +22,7 @@ public class DoctorServiceImpl implements DoctorService {
 
 	@Autowired
 	private DoctorRepository doctorRepository;
+	 private NotificationClient notificationClient;
 
 	/**
 	 * Maps a Doctor entity to a DoctorDTO object.
@@ -56,35 +59,44 @@ public class DoctorServiceImpl implements DoctorService {
 	 * Updates an existing doctor's details.
 	 */
 	@Override
-	public DoctorDTO updateDoctor(Long doctorId, DoctorDTO dto) {
-		LOGGER.info("Updating Doctor with ID: {}", doctorId);
-		LOGGER.info("Received Update Request: {}", dto); // ✅ Log incoming request
+	public DoctorDTO updateDoctor(Long doctorId, Long requestingDoctorId, DoctorDTO dto) {
+	    LOGGER.info("Updating Doctor with ID: {}", doctorId);
+	    LOGGER.info("Received Update Request: {}", dto); // ✅ Log incoming request
 
-		Doctor doctor = doctorRepository.findById(doctorId)
-				.orElseThrow(() -> new DoctorNotFoundException("Doctor not found with id " + doctorId));
+	    // Fetch doctor or throw an exception if not found
+	    Doctor doctor = doctorRepository.findById(doctorId)
+	            .orElseThrow(() -> new DoctorNotFoundException("Doctor not found with id " + doctorId));
 
-		// ✅ Validate Available Time Format
-		if (!dto.getAvailableTime().matches("^([0-9]{2}:[0-9]{2} (AM|PM) - [0-9]{2}:[0-9]{2} (AM|PM))$")) {
-			throw new IllegalArgumentException("Invalid availableTime format! Must be HH:MM AM/PM - HH:MM AM/PM.");
-		}
+	    // ✅ Validate Doctor Authorization
+	    if (!doctor.getDoctorId().equals(requestingDoctorId)) {
+	        LOGGER.error("Unauthorized attempt to update doctor ID: {}", doctorId);
+	        throw new UnauthorizedAccessException("Unauthorized: Cannot update another doctor's details.");
+	    }
 
-		doctor.setDoctorName(dto.getDoctorName());
-		doctor.setSpecialization(dto.getSpecialization());
-		doctor.setExperience(dto.getExperience());
-		doctor.setContactNumber(dto.getContactNumber());
-		doctor.setEmail(dto.getEmail());
-		doctor.setAvailableDays(dto.getAvailableDays());
-		doctor.setAvailableTime(dto.getAvailableTime());
+	    // ✅ Validate Available Time Format
+	    if (!dto.getAvailableTime().matches("^([0-9]{2}:[0-9]{2} (AM|PM) - [0-9]{2}:[0-9]{2} (AM|PM))$")) {
+	        throw new IllegalArgumentException("Invalid availableTime format! Must be HH:MM AM/PM - HH:MM AM/PM.");
+	    }
 
-		try {
-			doctorRepository.save(doctor);
-			LOGGER.info("Doctor updated successfully for ID: {}", doctorId);
-			return mapToDTO(doctor);
-		} catch (Exception e) {
-			LOGGER.error("Error updating doctor details: {}", e.getMessage());
-			throw new RuntimeException("Failed to update doctor details. Please check the input data.");
-		}
+	    // Update doctor details
+	    doctor.setDoctorName(dto.getDoctorName());
+	    doctor.setSpecialization(dto.getSpecialization());
+	    doctor.setExperience(dto.getExperience());
+	    doctor.setContactNumber(dto.getContactNumber());
+	    doctor.setEmail(dto.getEmail());
+	    doctor.setAvailableDays(dto.getAvailableDays());
+	    doctor.setAvailableTime(dto.getAvailableTime());
+
+	    try {
+	        doctorRepository.save(doctor);
+	        LOGGER.info("Doctor updated successfully for ID: {}", doctorId);
+	        return mapToDTO(doctor);
+	    } catch (Exception e) {
+	        LOGGER.error("Error updating doctor details: {}", e.getMessage());
+	        throw new RuntimeException("Failed to update doctor details. Please check the input data.");
+	    }
 	}
+
 
 	/**
 	 * Retrieves a list of all doctors in the system.
@@ -109,16 +121,22 @@ public class DoctorServiceImpl implements DoctorService {
 	 * Deletes a doctor by their unique ID.
 	 */
 	@Override
-	public void deleteDoctor(Long doctorId) {
-		LOGGER.info("Deleting Doctor with ID: {}", doctorId);
+	public void deleteDoctor(Long doctorId, Long requestingDoctorId) {
+	    LOGGER.info("Deleting Doctor with ID: {}", doctorId);
 
-		if (!doctorRepository.existsById(doctorId)) {
-			LOGGER.error("Doctor not found with ID: {}", doctorId);
-			throw new DoctorNotFoundException("Doctor not found with id " + doctorId);
-		}
+	    // Check if doctor exists
+	    Doctor doctor = doctorRepository.findById(doctorId)
+	            .orElseThrow(() -> new DoctorNotFoundException("Doctor not found with ID: " + doctorId));
 
-		doctorRepository.deleteById(doctorId);
-		LOGGER.info("Doctor deleted successfully.");
+	    // ✅ Authorization Check - Only the doctor can delete their own profile
+	    if (!doctor.getDoctorId().equals(requestingDoctorId)) {
+	        LOGGER.error("Unauthorized attempt to delete doctor ID: {}", doctorId);
+	        throw new UnauthorizedAccessException("Unauthorized: You cannot delete another doctor's profile.");
+	    }
+
+	    // Perform deletion
+	    doctorRepository.deleteById(doctorId);
+	    LOGGER.info("Doctor deleted successfully.");
 	}
 
 	/**
@@ -126,20 +144,32 @@ public class DoctorServiceImpl implements DoctorService {
 	 */
 	@Override
 	public List<DoctorDTO> getDoctorAvailability(String specialization) {
-		LOGGER.info("Fetching Doctor availability for specialization: {}", specialization);
+	    LOGGER.info("Fetching doctor availability for specialization: {}", specialization);
+	    List<Doctor> doctors = doctorRepository.findBySpecialization(specialization);
+	    
+	    if (doctors.isEmpty()) {
+	        throw new DoctorNotFoundException("No doctors found for specialization: " + specialization);
+	    }
 
-		List<Doctor> doctors = doctorRepository.findBySpecialization(specialization);
-
-		if (doctors.isEmpty()) {
-			throw new DoctorNotFoundException("No doctors found for specialization: " + specialization);
-		}
-
-		return doctors.stream()
-				.map(doctor -> DoctorDTO.builder().doctorId(doctor.getDoctorId()).doctorName(doctor.getDoctorName())
-						.specialization(doctor.getSpecialization()).experience(doctor.getExperience())
-						.contactNumber(doctor.getContactNumber()).email(doctor.getEmail())
-						.availableDays(doctor.getAvailableDays()).availableTime(doctor.getAvailableTime()).build())
-				.toList();
+	    return doctors.stream().map(doctor -> DoctorDTO.builder()
+	            .doctorId(doctor.getDoctorId())
+	            .doctorName(doctor.getDoctorName())
+	            .specialization(doctor.getSpecialization())
+	            .experience(doctor.getExperience())
+	            .contactNumber(doctor.getContactNumber())
+	            .email(doctor.getEmail())
+	            .availableDays(doctor.getAvailableDays())
+	            .availableTime(doctor.getAvailableTime())
+	            .build())
+	        .toList();
 	}
+
+ 
+	 @Override
+	    public String notifyDoctorAboutAppointment(Long appointmentId) {
+	        String response = notificationClient.notifyDoctor(appointmentId); // ✅ Call Notification Service
+	        return response;
+	    }
+
 
 }

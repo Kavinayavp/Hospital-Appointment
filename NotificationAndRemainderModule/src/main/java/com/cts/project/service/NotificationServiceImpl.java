@@ -1,18 +1,18 @@
 package com.cts.project.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.cts.project.dto.AppointmentResponseDTO;
+import com.cts.project.dto.DoctorResponseDTO;
 import com.cts.project.dto.NotificationDTO;
 import com.cts.project.dto.PatientResponseDTO;
-import com.cts.project.exception.NotificationNotFoundException;
 import com.cts.project.feignclient.AppointmentClient;
+import com.cts.project.feignclient.DoctorClient;
+
 import com.cts.project.feignclient.MedicalHistoryClient;
 import com.cts.project.feignclient.PatientClient;
 import com.cts.project.model.Notification;
@@ -29,51 +29,52 @@ public class NotificationServiceImpl implements NotificationService {
 	private final PatientClient patientClient;
 	private final AppointmentClient appointmentClient;
 	private final MedicalHistoryClient medicalHistoryClient;
+	private final DoctorClient doctorClient;
 
 	private static final Logger logger = LoggerFactory.getLogger(NotificationServiceImpl.class);
 
-	public String notifyAppointmentStatus(Long appointmentId) {
-		try {
-			AppointmentResponseDTO appointment = appointmentClient.getAppointmentById(appointmentId);
-			String message = switch (appointment.getStatus().toUpperCase()) {
-			case "BOOKED" -> "Your appointment has been successfully booked for " + appointment.getAppointmentDate()
-					+ " at " + appointment.getAppointmentTime() + ".";
-			case "RESCHEDULED" -> "Your appointment has been rescheduled to " + appointment.getAppointmentDate()
-					+ " at " + appointment.getAppointmentTime() + ".";
-			case "CANCELLED" -> "Your appointment has been cancelled.";
-			default -> "Your appointment status is updated.";
-			};
+	public String notifyPatientAboutAppointment(Long appointmentId) {
+	    try {
+	        AppointmentResponseDTO appointment = appointmentClient.getAppointmentById(appointmentId);
+	        Long patientId = appointment.getPatientId();
 
-			sendNotificationToPatient(appointment.getPatientId(), message);
-			logger.info("Notification sent for appointment ID: {}", appointmentId);
-			return "Notification sent successfully for Appointment ID: " + appointmentId;
-		} catch (FeignException.NotFound e) {
-			logger.error("Appointment not found with ID: {}", appointmentId);
-			return "Appointment not found with ID: " + appointmentId;
-		} catch (Exception e) {
-			logger.error("Error fetching appointment details: {}", e.getMessage());
-			return "Error fetching appointment details: " + e.getMessage();
-		}
+	        String message = switch (appointment.getStatus().toUpperCase()) {
+	            case "BOOKED" -> "Your appointment has been successfully booked for " + appointment.getAppointmentDate()
+	                    + " at " + appointment.getAppointmentTime() + ".";
+	            case "RESCHEDULED" -> "Your appointment has been rescheduled to " + appointment.getAppointmentDate()
+	                    + " at " + appointment.getAppointmentTime() + ".";
+	            case "CANCELLED" -> "Your appointment has been cancelled.";
+	            default -> "Your appointment status has been updated.";
+	        };
+
+	        return sendNotificationToPatient(patientId, message);
+	    } catch (FeignException.NotFound e) {
+	    	logger.error("Appointment not found with ID: {}", appointmentId);
+	        return "Appointment not found with ID: " + appointmentId;
+	    } catch (Exception e) {
+	    	logger.error("Error notifying patient about appointment: {}", e.getMessage());
+	        return "Error notifying patient about appointment: " + e.getMessage();
+	    }
 	}
 
 	public String sendNotificationToPatient(Long patientId, String message) {
-		try {
-			PatientResponseDTO patient = patientClient.getPatientById(patientId);
-			Notification notification = new Notification();
-			notification.setPatientId(patientId);
-			notification.setMessage("Hi " + patient.getPatientName() + ", " + message);
-			notification.setTimestamp(LocalDateTime.now());
+	    try {
+	        PatientResponseDTO patient = patientClient.getPatientById(patientId);
+	        Notification notification = new Notification();
+	        notification.setPatientId(patientId);
+	        notification.setMessage("Hi " + patient.getPatientName() + ", " + message);
+	        notification.setTimestamp(LocalDateTime.now());
 
-			Notification savedNotification = repository.save(notification); // ✅ Store notification
-			logger.info(" Notification stored in DB: {}", savedNotification); // ✅ Log saved notification
-			return "Notification sent successfully to Patient ID: " + patientId;
-		} catch (FeignException.NotFound e) {
-			logger.error(" Patient not found with ID: {}", patientId);
-			return "Patient not found with ID: " + patientId;
-		} catch (Exception e) {
-			logger.error(" Error while sending notification: {}", e.getMessage());
-			return "Error while sending notification: " + e.getMessage();
-		}
+	        repository.save(notification);
+	        logger.info("Patient notification stored in DB: {}", notification);
+	        return "Notification sent successfully to Patient ID: " + patientId;
+	    } catch (FeignException.NotFound e) {
+	    	logger.error("Patient not found with ID: {}", patientId);
+	        return "Patient not found with ID: " + patientId;
+	    } catch (Exception e) {
+	    	logger.error("Error sending notification to patient: {}", e.getMessage());
+	        return "Error sending notification to patient: " + e.getMessage();
+	    }
 	}
 
 	/** Send Notification Manually **/
@@ -96,4 +97,47 @@ public class NotificationServiceImpl implements NotificationService {
 				.message(dto.getMessage())
 				.timestamp(dto.getTimestamp() != null ? dto.getTimestamp() : LocalDateTime.now()).build();
 	}
+	
+	public String notifyDoctorAboutAppointment(Long appointmentId) {
+	    try {
+	        AppointmentResponseDTO appointment = appointmentClient.getAppointmentById(appointmentId);
+	        Long doctorId = appointment.getDoctorId();
+	        DoctorResponseDTO doctor = doctorClient.getDoctorById(doctorId);
+
+	        String message = String.format(
+	                "Dr. %s, you have an upcoming appointment with patient %s on %s at %s.",
+	                doctor.getDoctorName(), appointment.getPatientName(),
+	                appointment.getAppointmentDate(), appointment.getAppointmentTime()
+	        );
+
+	        return sendNotificationToDoctor(doctorId, message);
+	    } catch (FeignException.NotFound e) {
+	    	logger.error("Appointment or Doctor not found for ID: {}", appointmentId);
+	        return "Appointment or Doctor not found for ID: " + appointmentId;
+	    } catch (Exception e) {
+	    	logger.error("Error notifying doctor about appointment: {}", e.getMessage());
+	        return "Error notifying doctor about appointment: " + e.getMessage();
+	    }
+	}
+
+	public String sendNotificationToDoctor(Long doctorId, String message) {
+	    try {
+	        DoctorResponseDTO doctor = doctorClient.getDoctorById(doctorId);
+	        Notification notification = new Notification();
+	        notification.setPatientId(doctorId); // ✅ Using doctor ID for notification
+	        notification.setMessage("Dr. " + doctor.getDoctorName() + ", " + message);
+	        notification.setTimestamp(LocalDateTime.now());
+
+	        repository.save(notification);
+	        logger.info("Doctor notification stored in DB: {}", notification);
+	        return "Notification sent successfully to Doctor ID: " + doctorId;
+	    } catch (FeignException.NotFound e) {
+	    	logger.error("Doctor not found with ID: {}", doctorId);
+	        return "Doctor not found with ID: " + doctorId;
+	    } catch (Exception e) {
+	    	logger.error("Error sending notification to doctor: {}", e.getMessage());
+	        return "Error sending notification to doctor: " + e.getMessage();
+	    }
+	}
+
 }

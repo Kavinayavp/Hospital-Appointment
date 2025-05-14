@@ -1,6 +1,8 @@
 package com.cts.project.service;
 
 import java.util.List;
+
+import com.cts.project.dto.DoctorDTO;
 import com.cts.project.dto.PatientDTO;
 
 public interface PatientService {
@@ -12,5 +14,7 @@ public interface PatientService {
 
 	PatientDTO getPatientById(Long id);
 
-	String deletePatient(Long id);
+	String deletePatient(Long id,Long requestingPatientId);
+
+	List<DoctorDTO> getDoctorAvailability(String specialization);
 }

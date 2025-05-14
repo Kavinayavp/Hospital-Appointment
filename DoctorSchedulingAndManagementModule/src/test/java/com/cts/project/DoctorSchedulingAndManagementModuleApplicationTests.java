@@ -65,7 +65,7 @@ class DoctorControllerTest {
 		DoctorDTO doctorDTO = new DoctorDTO(1L, "Dr. Jane Doe", "Neurologist", 15, "9123456789", "jane.doe@example.com",
 				List.of("Tuesday", "Thursday"), "09:00 AM - 05:00 PM");
 
-		doNothing().when(doctorService).updateDoctor(eq(1L), any(DoctorDTO.class));
+		doNothing().when(doctorService).updateDoctor(eq(1L), null, any(DoctorDTO.class));
 
 		mockMvc.perform(MockMvcRequestBuilders.put("/doctors/update/1").contentType(MediaType.APPLICATION_JSON)
 				.content("{\"doctorId\":1, \"doctorName\":\"Dr. Jane Doe\", \"specialization\":\"Neurologist\", "
@@ -104,7 +104,7 @@ class DoctorControllerTest {
 
 	@Test
 	void testDeleteDoctor() throws Exception {
-		doNothing().when(doctorService).deleteDoctor(1L);
+		doNothing().when(doctorService).deleteDoctor(1L, null);
 
 		mockMvc.perform(MockMvcRequestBuilders.delete("/doctors/deletedoctor/1"))
 				.andExpect(MockMvcResultMatchers.status().isOk())

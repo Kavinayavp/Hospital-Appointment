@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import com.cts.project.dto.DoctorDTO;
+import com.cts.project.exception.DoctorNotFoundException;
+import com.cts.project.exception.UnauthorizedAccessException;
 import com.cts.project.service.DoctorService;
 
 import jakarta.validation.Valid;
@@ -29,10 +31,25 @@ public class DoctorController {
 
 	/** Updates an existing doctor's details. */
 	@PutMapping("/update/{id}")
-	public String updateDoctor(@PathVariable Long id, @Valid @RequestBody DoctorDTO dto) {
-		LOGGER.info("Request to update doctor with ID: {}", id);
-		service.updateDoctor(id, dto);
-		return "Doctor details updated successfully.";
+	public String updateDoctor(
+	        @PathVariable Long id,
+	        @RequestHeader("requestingDoctorId") Long requestingDoctorId, // ✅ Authorization header
+	        @Valid @RequestBody DoctorDTO dto) {
+	    LOGGER.info("Request to update doctor with ID: {}", id);
+	    
+	    try {
+	        service.updateDoctor(id, requestingDoctorId, dto);
+	        return "Doctor details updated successfully.";
+	    } catch (UnauthorizedAccessException e) {
+	        LOGGER.error("Unauthorized update attempt for doctor ID: {}", id);
+	        return "Unauthorized: Cannot update another doctor's details.";
+	    } catch (DoctorNotFoundException e) {
+	        LOGGER.error("Doctor not found: {}", id);
+	        return "Doctor not found with ID: " + id;
+	    } catch (Exception e) {
+	        LOGGER.error("Error updating doctor details: {}", e.getMessage());
+	        return "Failed to update doctor details.";
+	    }
 	}
 
 	/** Retrieves all doctors available in the system. */
@@ -49,18 +66,41 @@ public class DoctorController {
 		return service.getDoctorById(id);
 	}
 
+
 	/** Deletes a doctor by their unique ID. */
 	@DeleteMapping("/deletedoctor/{id}")
-	public String deleteDoctor(@PathVariable Long id) {
-		LOGGER.info("Request to delete doctor with ID: {}", id);
-		service.deleteDoctor(id);
-		return "Doctor with ID " + id + " deleted successfully.";
+	public String deleteDoctor(
+	        @PathVariable Long id,
+	        @RequestHeader("requestingDoctorId") Long requestingDoctorId) { // ✅ Authorization Header
+	    LOGGER.info("Request to delete doctor with ID: {}", id);
+
+	    try {
+	        service.deleteDoctor(id, requestingDoctorId);
+	        return "Doctor with ID " + id + " deleted successfully.";
+	    } catch (UnauthorizedAccessException e) {
+	        LOGGER.error("Unauthorized deletion attempt for doctor ID: {}", id);
+	        return "Unauthorized: You cannot delete another doctor's profile.";
+	    } catch (DoctorNotFoundException e) {
+	        LOGGER.error("Doctor not found: {}", id);
+	        return "Doctor not found with ID: " + id;
+	    } catch (Exception e) {
+	        LOGGER.error("Error deleting doctor details: {}", e.getMessage());
+	        return "Failed to delete doctor details.";
+	    }
 	}
+
 
 	/** Fetches a doctor’s availability based on specialization. */
 	@GetMapping("/availability/{specialization}")
-	public List<DoctorDTO> getAvailability(@PathVariable String specialization) {
-		LOGGER.info("Request to check availability for specialization: {}", specialization);
-		return service.getDoctorAvailability(specialization);
+	public List<DoctorDTO> getDoctorAvailability(@PathVariable String specialization) {
+	    LOGGER.info("Fetching Doctor availability for specialization: {}", specialization);
+	    return service.getDoctorAvailability(specialization);
 	}
+
+	@GetMapping("/appointments/{appointmentId}/notifyDoctor")
+	public String notifyDoctor(@PathVariable Long appointmentId) {
+	    LOGGER.info("Notifying doctor about appointment ID: {}", appointmentId);
+	    return service.notifyDoctorAboutAppointment(appointmentId);
+	}
+
 }

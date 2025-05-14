@@ -19,4 +19,6 @@ public interface AppointmentService {
 
 	// Delete an appointment and return success status
 	boolean deleteAppointment(Long appointmentId, Long patientId);
+
+	String notifyDoctorAboutAppointment(Long appointmentId);
 }

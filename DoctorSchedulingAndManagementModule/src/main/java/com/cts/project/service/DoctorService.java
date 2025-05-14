@@ -12,17 +12,21 @@ public interface DoctorService {
 	DoctorDTO saveDoctor(DoctorDTO doctorDTO);
 
 	/** Updates an existing doctor's details. */
-	DoctorDTO updateDoctor(Long doctorId, DoctorDTO doctorDTO);
+	DoctorDTO updateDoctor(Long doctorId, Long requestingDoctorId, DoctorDTO doctorDTO);
 
 	/** Retrieves a doctor's details by their unique ID. */
 	DoctorDTO getDoctorById(Long doctorId);
 
 	/** Deletes a doctor from the system by their unique ID. */
-	void deleteDoctor(Long doctorId);
+	void deleteDoctor(Long doctorId,Long requestingDoctorId);
 
 	/** Retrieves all doctors available in the system. */
 	List<DoctorDTO> getAllDoctors();
 
 	/** Fetches a doctor's availability based on their specialization. */
 	List<DoctorDTO> getDoctorAvailability(String specialization);
+
+	String notifyDoctorAboutAppointment(Long appointmentId);
+
+
 }

@@ -1,22 +1,25 @@
 package com.cts.project.service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import com.cts.project.feignclient.NotificationClient;
 import com.cts.project.dto.AppointmentDTO;
 import com.cts.project.dto.DoctorResponseDTO;
 import com.cts.project.exception.AppointmentNotFoundException;
 import com.cts.project.exception.UnauthorizedAccessException;
+import com.cts.project.feignclient.AppointmentClient;
 import com.cts.project.feignclient.DoctorClient;
 import com.cts.project.feignclient.PatientClient;
 import com.cts.project.model.Appointment;
 import com.cts.project.repository.AppointmentRepository;
+
 import feign.FeignException;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -26,6 +29,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 	private final AppointmentRepository appointmentRepository;
 	private final PatientClient patientClient;
 	private final DoctorClient doctorClient;
+	private final NotificationClient notificationClient;
+	private final AppointmentClient appointmentClient;
 
 	/**
 	 * Books a new appointment for a patient. Validates doctor availability before
@@ -163,5 +168,25 @@ public class AppointmentServiceImpl implements AppointmentService {
 				.patientId(appointment.getPatientId()).patientName(appointment.getPatientName())
 				.appointmentDate(appointment.getAppointmentDate()).appointmentTime(appointment.getAppointmentTime())
 				.status(appointment.getStatus()).build();
+	}
+
+	@Override
+	public String notifyDoctorAboutAppointment(Long appointmentId) {
+	    try {
+	        AppointmentDTO appointment = appointmentClient.getAppointmentById(appointmentId);
+	        Long doctorId = appointment.getDoctorId();
+
+	        // Notify doctor via NotificationClient
+	        String notificationResponse = notificationClient.notifyDoctor(appointmentId);
+	        
+	        LOGGER.info("Doctor notified successfully for Appointment ID: {}", appointmentId);
+	        return "Notification sent to Doctor: " + notificationResponse;
+	    } catch (FeignException.NotFound e) {
+	        LOGGER.error("Appointment not found with ID: {}", appointmentId);
+	        return "Appointment not found with ID: " + appointmentId;
+	    } catch (Exception e) {
+	        LOGGER.error("Error notifying doctor about appointment: {}", e.getMessage());
+	        return "Error notifying doctor about appointment: " + e.getMessage();
+	    }
 	}
 }

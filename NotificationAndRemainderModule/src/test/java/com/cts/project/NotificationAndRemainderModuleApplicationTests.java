@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class NotificationAndRemainderModuleApplicationTests {
 
 	private final NotificationRepository repo = mock(NotificationRepository.class);
-	private final NotificationServiceImpl service = new NotificationServiceImpl(repo, null, null, null);
+	private final NotificationServiceImpl service = new NotificationServiceImpl(repo, null, null, null, null);
 
 	@Test
 	void testSendNotification() {
